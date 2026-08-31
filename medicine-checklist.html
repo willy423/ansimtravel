@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<!-- © 2026 안심여행정보. All rights reserved. 본 문서(HTML/CSS/JS 및 콘텐츠 전체)의 무단 복제, 재배포, 상업적 이용을 금지합니다. -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>해외여행 상비약 체크리스트 | 안심여행정보</title>
+<style>
+  :root{
+    --bg:#F2FAF8;
+    --card-bg:#FFFFFF;
+    --mint:#5FBFA8;
+    --mint-dark:#3F9F8A;
+    --mint-light:#E1F5EF;
+    --blue:#7FB8E8;
+    --blue-dark:#4E93CE;
+    --blue-light:#E5F1FB;
+    --text-main:#31424A;
+    --text-sub:#71838C;
+    --border:#DEEEEA;
+    --shadow:0 4px 16px rgba(60,110,100,0.08);
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text-main);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+    line-height:1.6;
+    padding-bottom:60px;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:0 20px;}
+
+  /* header */
+  header.hero{
+    background:linear-gradient(135deg,var(--mint) 0%,var(--blue) 100%);
+    padding:44px 20px 56px;
+    text-align:center;
+    color:#fff;
+    border-radius:0 0 32px 32px;
+    box-shadow:var(--shadow);
+  }
+  header.hero .eyebrow{
+    font-size:13px;
+    letter-spacing:0.06em;
+    opacity:0.9;
+    font-weight:600;
+    margin-bottom:10px;
+  }
+  header.hero h1{
+    font-size:26px;
+    margin:0 0 10px;
+    font-weight:800;
+  }
+  header.hero p{
+    font-size:14.5px;
+    opacity:0.95;
+    margin:0;
+  }
+
+  /* progress card - overlapping hero */
+  .progress-card{
+    max-width:680px;
+    margin:-34px auto 28px;
+    background:var(--card-bg);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px 22px;
+  }
+  .progress-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:10px;
+  }
+  .progress-top .label{font-size:13.5px;color:var(--text-sub);font-weight:600;}
+  .progress-top .count{font-size:15px;font-weight:800;color:var(--mint-dark);}
+  .bar-track{
+    width:100%;
+    height:10px;
+    background:var(--mint-light);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .bar-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--mint),var(--blue));
+    border-radius:999px;
+    transition:width 0.35s ease;
+  }
+  .progress-msg{
+    margin-top:10px;
+    font-size:13px;
+    color:var(--text-sub);
+  }
+
+  /* filter chips */
+  .filter-section{margin:0 0 26px;}
+  .filter-title{
+    font-size:14px;
+    font-weight:700;
+    color:var(--text-main);
+    margin:0 0 10px;
+  }
+  .filter-hint{font-size:12.5px;color:var(--text-sub);margin:0 0 12px;}
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    border:1.5px solid var(--border);
+    background:#fff;
+    color:var(--text-main);
+    padding:9px 16px;
+    border-radius:999px;
+    font-size:13.5px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all 0.2s ease;
+    user-select:none;
+  }
+  .chip:hover{border-color:var(--mint);}
+  .chip.active{
+    background:linear-gradient(135deg,var(--mint),var(--blue));
+    border-color:transparent;
+    color:#fff;
+  }
+
+  /* category */
+  .category{
+    background:var(--card-bg);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    margin-bottom:18px;
+    overflow:hidden;
+  }
+  .category-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:16px 20px;
+  }
+  .category-head.mint-tint{background:var(--mint-light);}
+  .category-head.blue-tint{background:var(--blue-light);}
+  .category-head .icon{font-size:20px;}
+  .category-head h2{
+    font-size:16px;
+    margin:0;
+    font-weight:800;
+  }
+  .item-list{padding:6px 10px 10px;}
+  .item{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:12px 10px;
+    border-radius:12px;
+    transition:opacity 0.2s ease, background 0.2s ease;
+  }
+  .item.dim{opacity:0.4;}
+  .item.match{background:var(--mint-light);}
+  .item input[type=checkbox]{
+    appearance:none;
+    -webkit-appearance:none;
+    width:22px;
+    height:22px;
+    flex:0 0 22px;
+    margin-top:2px;
+    border:2px solid var(--mint);
+    border-radius:7px;
+    cursor:pointer;
+    position:relative;
+    background:#fff;
+    transition:background 0.15s ease;
+  }
+  .item input[type=checkbox]:checked{
+    background:var(--mint);
+  }
+  .item input[type=checkbox]:checked::after{
+    content:"";
+    position:absolute;
+    left:6px; top:2px;
+    width:6px; height:11px;
+    border:solid #fff;
+    border-width:0 2px 2px 0;
+    transform:rotate(40deg);
+  }
+  .item label{cursor:pointer;flex:1;}
+  .item .item-name{
+    font-size:14.5px;
+    font-weight:700;
+    color:var(--text-main);
+  }
+  .item.checked .item-name{
+    text-decoration:line-through;
+    color:var(--text-sub);
+  }
+  .item .item-desc{
+    font-size:12.5px;
+    color:var(--text-sub);
+    margin-top:2px;
+  }
+  .tag-badge{
+    display:inline-block;
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--blue-dark);
+    background:var(--blue-light);
+    padding:2px 8px;
+    border-radius:999px;
+    margin-top:6px;
+  }
+
+  /* actions */
+  .actions{
+    display:flex;
+    gap:10px;
+    margin:22px 0 30px;
+  }
+  .btn{
+    flex:1;
+    border:none;
+    padding:14px;
+    border-radius:12px;
+    font-size:14.5px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-print{
+    background:#fff;
+    color:var(--mint-dark);
+    border:1.5px solid var(--mint);
+  }
+  .btn-reset{
+    background:transparent;
+    color:var(--text-sub);
+    border:1.5px solid var(--border);
+  }
+
+  .disclaimer{
+    font-size:12px;
+    color:var(--text-sub);
+    background:var(--card-bg);
+    border-radius:12px;
+    padding:14px 16px;
+    box-shadow:var(--shadow);
+    margin-bottom:30px;
+  }
+
+  footer.foot{
+    text-align:center;
+    font-size:12px;
+    color:var(--text-sub);
+    margin-top:34px;
+    line-height:1.7;
+  }
+  footer.foot .copyright{
+    display:inline-block;
+    margin-top:6px;
+    font-size:11px;
+    color:#9AABB0;
+  }
+
+  body{-webkit-user-select:none;-moz-user-select:none;user-select:none;}
+  input,label{-webkit-user-select:none;user-select:none;}
+
+  @media print{
+    header.hero{background:none;color:var(--text-main);border-radius:0;box-shadow:none;padding:10px 0;}
+    .filter-section,.actions,.progress-msg{display:none !important;}
+    .category,.progress-card,.disclaimer{box-shadow:none;border:1px solid var(--border);}
+    body{padding-bottom:0;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="eyebrow">안심여행정보 · 여행 준비 도구</div>
+  <h1>해외여행 상비약 체크리스트</h1>
+  <p>내 여행 스타일에 맞춰 체크하고, 짐 싸기 전에 빠짐없이 챙겨보세요</p>
+</header>
+
+<div class="wrap">
+
+  <div class="progress-card">
+    <div class="progress-top">
+      <span class="label">준비 진행률</span>
+      <span class="count"><span id="checkedCount">0</span> / <span id="totalCount">0</span>개 준비완료</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    <p class="progress-msg" id="progressMsg">체크박스를 눌러 준비물을 하나씩 확인해보세요.</p>
+  </div>
+
+  <div class="filter-section">
+    <p class="filter-title">내 여행은 어떤 유형인가요?</p>
+    <p class="filter-hint">해당하는 조건을 골라보세요 (여러 개 선택 가능) — 관련 항목이 하이라이트됩니다.</p>
+    <div class="chip-row" id="chipRow">
+      <button class="chip" data-tag="더운지역">🌴 더운 지역 여행</button>
+      <button class="chip" data-tag="장시간이동">✈️ 장시간 이동</button>
+      <button class="chip" data-tag="아이동반">👨‍👩‍👧 아이 동반</button>
+      <button class="chip" data-tag="만성질환자">💊 만성질환 있음</button>
+    </div>
+  </div>
+
+  <div id="categoryContainer"></div>
+
+  <div class="actions">
+    <button class="btn btn-print" id="printBtn">🖨️ 인쇄 · PDF로 저장</button>
+    <button class="btn btn-reset" id="resetBtn">체크 초기화</button>
+  </div>
+
+  <div class="disclaimer">
+    ⓘ 본 체크리스트는 일반적인 여행 준비 참고용 정보입니다. 개인 건강 상태나 복용 중인 약이 있다면 출국 전 약사·의사와 상담 후 준비하시길 권장드리며, 만성질환 처방약은 영문 처방전(또는 영문 소견서)을 함께 지참하시면 현지 통관·응급 상황에 도움이 됩니다.
+  </div>
+
+  <footer class="foot">
+    안심여행정보 · 여행 전 미리 챙기는 안심 체크리스트<br>
+    <span class="copyright">© 2026 안심여행정보. All rights reserved. 본 콘텐츠(텍스트·구성·디자인)의 무단 복제, 캡처, 재배포 및 상업적 이용을 금지합니다.</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var DATA = [
+    { key:"fever", name:"해열·진통·소염제", icon:"🌡️", tint:"mint-tint", items:[
+      { name:"해열진통제 (아세트아미노펜 계열)", desc:"발열·두통·근육통에 기본으로 챙기는 상비약입니다.", tags:["기본"] },
+      { name:"소염진통제 (이부프로벤 등 NSAID 계열)", desc:"염증을 동반한 통증에 효과적입니다.", tags:["기본","장시간이동"] },
+      { name:"붙이는 파스·진통 패치", desc:"장시간 이동으로 인한 근육 뭉침에 유용합니다.", tags:["장시간이동"] }
+    ]},
+    { key:"digest", name:"소화기 계통", icon:"🍽️", tint:"blue-tint", items:[
+      { name:"종합소화제", desc:"과식이나 낯선 음식으로 속이 더부룩할 때 필요합니다.", tags:["기본"] },
+      { name:"지사제 (설사약)", desc:"물이 바뀌면서 생기는 배탈에 대비합니다. 성분에 따라 종류가 다르니 약사와 상의해 준비하세요.", tags:["기본","더운지역"] },
+      { name:"제산제 (속쓰림)", desc:"자극적인 음식으로 인한 속쓰림을 진정시켜 줍니다.", tags:["더운지역"] },
+      { name:"정장제 · 유산균", desc:"장 컨디션 유지에 도움이 됩니다. 특히 아이와 함께라면 챙겨두면 든든합니다.", tags:["더운지역","아이동반"] }
+    ]},
+    { key:"cold", name:"감기 및 알레르기", icon:"🤧", tint:"mint-tint", items:[
+      { name:"종합감기약 (낮용/밤용 구분)", desc:"콧물·기침 등 초기 감기 증상에 대비합니다.", tags:["기본","장시간이동"] },
+      { name:"항히스타민제 (2세대 성분)", desc:"갑작스러운 알레르기 비염·두드러기에 사용하며, 졸음 부작용이 비교적 적은 편입니다.", tags:["기본"] },
+      { name:"인후염 스프레이 · 트로키", desc:"비행기 내 건조함으로 인한 목 통증 예방에 도움이 됩니다.", tags:["장시간이동"] }
+    ]},
+    { key:"skin", name:"상처 및 피부", icon:"🩹", tint:"blue-tint", items:[
+      { name:"방수 습윤밴드", desc:"일반 밴드보다 회복이 빠르고 샤워·수영 시에도 유용합니다.", tags:["기본","아이동반"] },
+      { name:"항생제 연고", desc:"상처 부위 감염 예방을 위해 작은 튜브 하나면 충분합니다.", tags:["기본","아이동반"] },
+      { name:"벌레 물린 데 바르는 약", desc:"가려움과 붓기를 가라앉혀 줍니다.", tags:["더운지역","아이동반"] },
+      { name:"모기·해충 기피제", desc:"더운 지역에서는 모기 매개 질환 예방을 위해 꼭 챙기는 것이 좋습니다.", tags:["더운지역"] }
+    ]},
+    { key:"etc", name:"기타 준비물", icon:"🧳", tint:"mint-tint", items:[
+      { name:"멀미약", desc:"장시간 버스·배 이동이 있다면 출발 전 미리 복용하세요.", tags:["장시간이동","아이동반"] },
+      { name:"인공눈물", desc:"기내나 건조한 지역에서 눈의 피로를 덜어줍니다. 일회용 제품이 위생적입니다.", tags:["장시간이동"] },
+      { name:"개인 처방약 + 영문 처방전", desc:"만성질환 약은 여유분과 함께 영문 처방전(소견서)을 지참하면 안심입니다.", tags:["만성질환자"] },
+      { name:"휴대용 체온계", desc:"아이와 동행하거나 지병이 있다면 상태 확인용으로 유용합니다.", tags:["아이동반","만성질환자"] }
+    ]}
+  ];
+
+  var activeTags = new Set();
+  var container = document.getElementById('categoryContainer');
+  var totalItems = 0;
+
+  DATA.forEach(function(cat, ci){
+    var section = document.createElement('div');
+    section.className = 'category';
+
+    var head = document.createElement('div');
+    head.className = 'category-head ' + cat.tint;
+    head.innerHTML = '<span class="icon">'+cat.icon+'</span><h2>'+cat.name+'</h2>';
+    section.appendChild(head);
+
+    var list = document.createElement('div');
+    list.className = 'item-list';
+
+    cat.items.forEach(function(it, ii){
+      totalItems++;
+      var id = 'chk-'+ci+'-'+ii;
+      var row = document.createElement('div');
+      row.className = 'item';
+      row.setAttribute('data-tags', it.tags.join(','));
+
+      var tagBadges = it.tags.filter(function(t){return t!=='기본';})
+        .map(function(t){return '<span class="tag-badge">'+tagLabel(t)+'</span>';}).join(' ');
+
+      row.innerHTML =
+        '<input type="checkbox" id="'+id+'">' +
+        '<label for="'+id+'">' +
+          '<div class="item-name">'+it.name+'</div>' +
+          '<div class="item-desc">'+it.desc+'</div>' +
+          (tagBadges ? '<div>'+tagBadges+'</div>' : '') +
+        '</label>';
+
+      list.appendChild(row);
+    });
+
+    section.appendChild(list);
+    container.appendChild(section);
+  });
+
+  document.getElementById('totalCount').textContent = totalItems;
+
+  function tagLabel(t){
+    var map = {"더운지역":"🌴 더운지역","장시간이동":"✈️ 장시간이동","아이동반":"👨‍👩‍👧 아이동반","만성질환자":"💊 만성질환"};
+    return map[t] || t;
+  }
+
+  function updateProgress(){
+    var boxes = document.querySelectorAll('.item input[type=checkbox]');
+    var checked = document.querySelectorAll('.item input[type=checkbox]:checked').length;
+    document.getElementById('checkedCount').textContent = checked;
+    var pct = boxes.length ? Math.round((checked/boxes.length)*100) : 0;
+    document.getElementById('barFill').style.width = pct + '%';
+    var msg = document.getElementById('progressMsg');
+    if(checked === 0){
+      msg.textContent = '체크박스를 눌러 준비물을 하나씩 확인해보세요.';
+    } else if(pct < 100){
+      msg.textContent = '잘 챙기고 계세요! '+pct+'% 완료했습니다.';
+    } else {
+      msg.textContent = '모든 준비물을 다 챙기셨네요! 즐거운 여행 되세요 ✈️';
+    }
+  }
+
+  container.addEventListener('change', function(e){
+    if(e.target.matches('input[type=checkbox]')){
+      var item = e.target.closest('.item');
+      item.classList.toggle('checked', e.target.checked);
+      updateProgress();
+    }
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    document.querySelectorAll('.item input[type=checkbox]').forEach(function(cb){
+      cb.checked = false;
+      cb.closest('.item').classList.remove('checked');
+    });
+    updateProgress();
+  });
+
+  document.getElementById('printBtn').addEventListener('click', function(){
+    window.print();
+  });
+
+  function applyFilters(){
+    var items = document.querySelectorAll('.item');
+    if(activeTags.size === 0){
+      items.forEach(function(el){ el.classList.remove('dim','match'); });
+      return;
+    }
+    items.forEach(function(el){
+      var tags = (el.getAttribute('data-tags')||'').split(',');
+      var matches = tags.some(function(t){ return activeTags.has(t); });
+      el.classList.toggle('match', matches);
+      el.classList.toggle('dim', !matches);
+    });
+  }
+
+  document.getElementById('chipRow').addEventListener('click', function(e){
+    var chip = e.target.closest('.chip');
+    if(!chip) return;
+    var tag = chip.getAttribute('data-tag');
+    if(activeTags.has(tag)){
+      activeTags.delete(tag);
+      chip.classList.remove('active');
+    } else {
+      activeTags.add(tag);
+      chip.classList.add('active');
+    }
+    applyFilters();
+  });
+
+  updateProgress();
+
+  // 콘텐츠 무단 복제 방지용 최소 저지선 (완전 차단은 불가하며, 정상 이용자의 불편을 줄이기 위해 최소한으로 적용)
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  console.log('이 페이지는 안심여행정보(© 2026)가 제작한 콘텐츠입니다. 무단 복제·재배포를 금지합니다.');
+})();
+</script>
+
+</body>
+</html>
