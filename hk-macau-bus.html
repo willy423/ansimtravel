@@ -1,0 +1,318 @@
+<!doctype html>
+<title>홍콩⇆마카오 직행버스 시간표</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    color-scheme: light;
+    --bg:             #f2f6fb;
+    --surface:        #ffffff;
+    --surface-2:      #eef2f8;
+    --text-primary:   #10161e;
+    --text-secondary: #4d5b6b;
+    --text-muted:     #8695a4;
+    --border:         rgba(16,22,30,0.09);
+    --shadow:         0 1px 2px rgba(16,22,30,0.04), 0 8px 24px -12px rgba(16,22,30,0.18);
+
+    --blue:           #1c67c9;
+    --blue-soft:      #e2edfb;
+    --orange:         #c9660e;
+    --orange-soft:    #fbecdb;
+    --good:           #0ca30c;
+    --good-soft:      #e4f7e4;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg:             #0c1016;
+      --surface:        #151b23;
+      --surface-2:      #1b2430;
+      --text-primary:   #eef2f7;
+      --text-secondary: #9daab8;
+      --text-muted:     #6b7684;
+      --border:         rgba(255,255,255,0.09);
+      --shadow:         0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+
+      --blue:           #5b9bea;
+      --blue-soft:      rgba(91,155,234,0.14);
+      --orange:         #e2a24a;
+      --orange-soft:    rgba(226,162,74,0.14);
+      --good:           #35c235;
+      --good-soft:      rgba(53,194,53,0.14);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg:             #0c1016;
+    --surface:        #151b23;
+    --surface-2:      #1b2430;
+    --text-primary:   #eef2f7;
+    --text-secondary: #9daab8;
+    --text-muted:     #6b7684;
+    --border:         rgba(255,255,255,0.09);
+    --shadow:         0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+
+    --blue:           #5b9bea;
+    --blue-soft:      rgba(91,155,234,0.14);
+    --orange:         #e2a24a;
+    --orange-soft:    rgba(226,162,74,0.14);
+    --good:           #35c235;
+    --good-soft:      rgba(53,194,53,0.14);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 32px 18px 48px;
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+
+  .clock {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--text-primary);
+  }
+  .clock .live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--good);
+    flex: none;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  .clock b { color: var(--text-primary); font-weight: 600; }
+
+  .legend {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .legend .lg {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12.5px; font-weight: 700;
+  }
+  .legend .lg .sw { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+  .legend .lg.b .sw { background: var(--blue); }
+  .legend .lg.o .sw { background: var(--orange); }
+
+  .next-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .next-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 12px 14px;
+  }
+  .next-card .lbl {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .next-card .val {
+    font-family: "IBM Plex Mono", monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 22px; font-weight: 700;
+  }
+  .next-card.b .val { color: var(--blue); }
+  .next-card.o .val { color: var(--orange); }
+  .next-card .sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .tbl {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 40px 1fr 1fr;
+    align-items: stretch;
+    border-bottom: 1px solid var(--border);
+    transition: opacity 150ms ease;
+  }
+  .row:last-child { border-bottom: none; }
+  .row.hd {
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+  }
+  .row.hd span {
+    font-size: 11.5px; font-weight: 700; color: var(--text-secondary);
+    padding: 10px 6px; text-align: center;
+  }
+  .row.hd span:first-child { text-align: left; padding-left: 12px; white-space: nowrap; }
+
+  .no {
+    display: flex; align-items: center;
+    padding-left: 14px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px; color: var(--text-muted);
+  }
+  .c {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-family: "IBM Plex Mono", monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 14.5px; font-weight: 600;
+    padding: 9px 4px;
+  }
+  .c.b { color: var(--blue); background: var(--blue-soft); }
+  .c.o { color: var(--orange); background: var(--orange-soft); }
+  .c.past { opacity: 0.45; }
+  .c.next { box-shadow: inset 0 0 0 2px currentColor; border-radius: 7px; margin: 4px; }
+  .c .badge {
+    font-family: "Archivo", sans-serif;
+    font-size: 9px; font-weight: 800;
+    background: currentColor;
+    color: var(--surface);
+    padding: 1px 5px;
+    border-radius: 5px;
+    letter-spacing: 0.02em;
+  }
+
+  footer.notes {
+    margin-top: 16px;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 380px) {
+    h1 { font-size: 21px; }
+    .c { font-size: 13px; }
+    .next-card .val { font-size: 19px; }
+  }
+</style>
+
+<div class="page">
+
+  <h1>홍콩⇆마카오 직행버스 시간표</h1>
+  <div class="clock"><span class="live-dot"></span>마카오·홍콩 현지 시각 <b id="clockVal">--:--</b></div>
+
+  <div class="legend">
+    <div class="lg b"><span class="sw"></span>마카오 → 홍콩공항</div>
+    <div class="lg o"><span class="sw"></span>홍콩공항 → 마카오</div>
+  </div>
+
+  <div class="next-row">
+    <div class="next-card b">
+      <div class="lbl">다음 버스 · 마카오→공항</div>
+      <div class="val" id="nextB">--:--</div>
+      <div class="sub" id="nextBsub">&nbsp;</div>
+    </div>
+    <div class="next-card o">
+      <div class="lbl">다음 버스 · 공항→마카오</div>
+      <div class="val" id="nextO">--:--</div>
+      <div class="sub" id="nextOsub">&nbsp;</div>
+    </div>
+  </div>
+
+  <div class="tbl" id="tbl">
+    <div class="row hd"><span>회차</span><span>마카오 → 홍콩공항</span><span>홍콩공항 → 마카오</span></div>
+  </div>
+
+  <footer class="notes">※ 표시된 시각은 각 방향의 출발 시각 기준입니다. 편도 약 45분 소요됩니다. "다음 버스"는 마카오·홍콩 현지 시각(UTC+8) 기준으로 자동 계산됩니다.</footer>
+
+</div>
+
+<script>
+  var rows = [
+    [1,"7:30","8:30"],[2,"8:00","9:00"],[3,"8:30","9:30"],[4,"9:00","10:00"],
+    [5,"9:30","10:30"],[6,"10:00","11:00"],[7,"10:30","11:30"],[8,"11:00","12:00"],
+    [9,"11:30","13:00"],[10,"12:00","13:30"],[11,"12:30","14:00"],[12,"13:30","14:30"],
+    [13,"14:00","15:00"],[14,"14:30","15:30"],[15,"15:00","16:00"],[16,"15:30","16:30"],
+    [17,"16:00","17:00"],[18,"16:30","17:30"],[19,"17:30","18:00"],[20,"18:30","19:00"],
+    [21,"19:30","20:00"],[22,"20:30","21:30"]
+  ];
+
+  function toMin(hhmm) {
+    var p = hhmm.split(":");
+    return parseInt(p[0],10) * 60 + parseInt(p[1],10);
+  }
+
+  var tbl = document.getElementById('tbl');
+  rows.forEach(function (r) {
+    var div = document.createElement('div');
+    div.className = 'row';
+    div.dataset.b = toMin(r[1]);
+    div.dataset.o = toMin(r[2]);
+    div.innerHTML =
+      '<span class="no">' + r[0] + '</span>' +
+      '<span class="c b" data-col="b"><span class="t">' + r[1] + '</span></span>' +
+      '<span class="c o" data-col="o"><span class="t">' + r[2] + '</span></span>';
+    tbl.appendChild(div);
+  });
+
+  function macauNowParts() {
+    var s = new Date().toLocaleString('en-US', { timeZone: 'Asia/Macau', hour12: false,
+      hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    var p = s.split(':');
+    return { h: parseInt(p[0],10), m: parseInt(p[1],10), s: parseInt(p[2],10) };
+  }
+
+  function render() {
+    var now = macauNowParts();
+    var nowMin = now.h * 60 + now.m;
+    document.getElementById('clockVal').textContent =
+      (now.h < 10 ? '0' : '') + now.h + ':' + (now.m < 10 ? '0' : '') + now.m;
+
+    ['b','o'].forEach(function (col) {
+      var nextIdx = -1;
+      for (var i = 0; i < rows.length; i++) {
+        var t = toMin(rows[i][col === 'b' ? 1 : 2]);
+        if (t >= nowMin) { nextIdx = i; break; }
+      }
+      var wrapAround = nextIdx === -1;
+      var target = wrapAround ? 0 : nextIdx;
+
+      var valEl = document.getElementById(col === 'b' ? 'nextB' : 'nextO');
+      var subEl = document.getElementById(col === 'b' ? 'nextBsub' : 'nextOsub');
+      valEl.textContent = rows[target][col === 'b' ? 1 : 2];
+      subEl.textContent = wrapAround ? '오늘 운행 종료 · 내일 첫차' : (rows[target][0] + '회차');
+
+      var cells = tbl.querySelectorAll('.c[data-col="' + col + '"]');
+      cells.forEach(function (cell, i) {
+        var t = toMin(rows[i][col === 'b' ? 1 : 2]);
+        var isPast = !wrapAround && t < nowMin;
+        var isNext = i === target;
+        cell.classList.toggle('past', isPast);
+        cell.classList.toggle('next', isNext);
+        var badge = cell.querySelector('.badge');
+        if (isNext) {
+          if (!badge) { cell.insertAdjacentHTML('beforeend', '<span class="badge">다음</span>'); }
+        } else if (badge) {
+          badge.remove();
+        }
+      });
+    });
+  }
+
+  render();
+  setInterval(render, 15000);
+</script>
