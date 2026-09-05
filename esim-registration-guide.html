@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<!-- © 2026 안심여행정보. All rights reserved. 본 문서(HTML/CSS/JS 및 콘텐츠 전체)의 무단 복제, 재배포, 상업적 이용을 금지합니다. -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이심(eSIM) 등록 스텝바이스텝 가이드 | 안심여행정보</title>
+<style>
+  :root{
+    --bg:#F2FAF8;
+    --card-bg:#FFFFFF;
+    --mint:#5FBFA8;
+    --mint-dark:#3F9F8A;
+    --mint-light:#E1F5EF;
+    --blue:#7FB8E8;
+    --blue-dark:#4E93CE;
+    --blue-light:#E5F1FB;
+    --amber:#E8A23F;
+    --amber-light:#FBF0DD;
+    --text-main:#31424A;
+    --text-sub:#71838C;
+    --border:#DEEEEA;
+    --shadow:0 4px 16px rgba(60,110,100,0.08);
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text-main);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+    font-size:16.5px;
+    line-height:1.75;
+    padding-bottom:60px;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:0 20px;}
+
+  /* header */
+  header.hero{
+    background:linear-gradient(135deg,var(--mint) 0%,var(--blue) 100%);
+    padding:44px 20px 56px;
+    text-align:center;
+    color:#fff;
+    border-radius:0 0 32px 32px;
+    box-shadow:var(--shadow);
+  }
+  header.hero .eyebrow{
+    font-size:13.5px;
+    letter-spacing:0.06em;
+    opacity:0.92;
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  header.hero h1{
+    font-size:25px;
+    margin:0 0 12px;
+    font-weight:800;
+    line-height:1.4;
+  }
+  header.hero p{
+    font-size:15px;
+    opacity:0.97;
+    margin:0;
+  }
+
+  /* progress card */
+  .progress-card{
+    max-width:680px;
+    margin:-34px auto 24px;
+    background:var(--card-bg);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px 22px;
+  }
+  .progress-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:10px;
+  }
+  .progress-top .label{font-size:14px;color:var(--text-sub);font-weight:700;}
+  .progress-top .count{font-size:15.5px;font-weight:800;color:var(--mint-dark);}
+  .bar-track{
+    width:100%;
+    height:10px;
+    background:var(--mint-light);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .bar-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--mint),var(--blue));
+    border-radius:999px;
+    transition:width 0.35s ease;
+  }
+  .progress-msg{
+    margin-top:10px;
+    font-size:13.5px;
+    color:var(--text-sub);
+  }
+
+  /* device select */
+  .device-select{
+    background:var(--card-bg);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:26px 22px;
+    margin-bottom:24px;
+    text-align:center;
+  }
+  .select-title{
+    font-size:19px;
+    font-weight:800;
+    margin:0 0 18px;
+  }
+  .device-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .device-card{
+    border:2px solid var(--border);
+    background:#fff;
+    border-radius:14px;
+    padding:22px 10px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    transition:all 0.2s ease;
+  }
+  .device-card:hover, .device-card:active{
+    border-color:var(--mint);
+    background:var(--mint-light);
+  }
+  .device-emoji{font-size:34px;}
+  .device-name{font-size:16.5px;font-weight:800;color:var(--text-main);}
+  .select-hint{
+    margin:18px 0 0;
+    font-size:13px;
+    color:var(--text-sub);
+  }
+
+  /* wizard */
+  .device-badge{
+    display:inline-block;
+    font-size:13px;
+    font-weight:700;
+    color:var(--blue-dark);
+    background:var(--blue-light);
+    padding:6px 14px;
+    border-radius:999px;
+    margin-bottom:14px;
+  }
+  .step-card{
+    background:var(--card-bg);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:26px 22px;
+    margin-bottom:18px;
+  }
+  .step-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:0 0 16px;
+  }
+  .step-head .icon{font-size:24px;}
+  .step-head h2{
+    font-size:19.5px;
+    margin:0;
+    font-weight:800;
+  }
+  .step-card p{margin:0 0 12px;}
+  .step-card ul, .step-card ol{margin:0 0 14px;padding-left:22px;}
+  .step-card li{margin-bottom:8px;}
+
+  .path-box{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:6px;
+    background:var(--mint-light);
+    border-radius:12px;
+    padding:14px 16px;
+    margin:14px 0;
+    font-weight:700;
+    font-size:15px;
+    color:var(--mint-dark);
+  }
+  .path-box .arrow{color:var(--text-sub);font-weight:400;}
+  .path-box .chip{
+    background:#fff;
+    border-radius:8px;
+    padding:5px 10px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.06);
+  }
+  .path-label{
+    font-size:13px;
+    font-weight:700;
+    color:var(--text-sub);
+    margin:0 0 -6px;
+  }
+
+  .tip-box, .warn-box, .info-box{
+    border-radius:12px;
+    padding:14px 16px;
+    margin:14px 0;
+    font-size:14.5px;
+  }
+  .tip-box{background:var(--blue-light);color:var(--text-main);}
+  .warn-box{background:var(--amber-light);color:var(--text-main);border:1px solid #F0DBB0;}
+  .info-box{background:var(--mint-light);color:var(--text-main);}
+  .tip-box b, .warn-box b, .info-box b{color:var(--mint-dark);}
+  .warn-box b{color:#B9791F;}
+
+  .sub-head{
+    font-size:15.5px;
+    font-weight:800;
+    margin:20px 0 10px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .sub-head:first-of-type{margin-top:4px;}
+
+  .method-list{counter-reset:m;list-style:none;padding-left:0;}
+  .method-list li{
+    counter-increment:m;
+    position:relative;
+    padding-left:34px;
+    margin-bottom:14px;
+  }
+  .method-list li::before{
+    content:counter(m);
+    position:absolute;
+    left:0; top:0;
+    width:24px;height:24px;
+    background:var(--mint);
+    color:#fff;
+    border-radius:50%;
+    font-size:13px;
+    font-weight:800;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  /* nav */
+  .nav-row{
+    display:flex;
+    gap:10px;
+    margin:8px 0 30px;
+  }
+  .btn{
+    border:none;
+    padding:14px;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-primary{
+    flex:1.4;
+    background:linear-gradient(135deg,var(--mint),var(--blue));
+    color:#fff;
+  }
+  .btn-primary:disabled{opacity:0.5;cursor:default;}
+  .btn-ghost{
+    flex:1;
+    background:#fff;
+    color:var(--text-main);
+    border:1.5px solid var(--border);
+  }
+  .btn-reset{
+    flex:1;
+    background:transparent;
+    color:var(--text-sub);
+    border:1.5px solid var(--border);
+    font-size:13.5px;
+  }
+
+  .disclaimer{
+    font-size:12.5px;
+    color:var(--text-sub);
+    background:var(--card-bg);
+    border-radius:12px;
+    padding:14px 16px;
+    box-shadow:var(--shadow);
+    margin-bottom:30px;
+  }
+
+  .related-box{
+    background:var(--card-bg);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px 20px;
+    margin-bottom:24px;
+  }
+  .related-box p{margin:0 0 8px;font-size:14px;color:var(--text-sub);font-weight:700;}
+  .related-box a{
+    display:block;
+    color:var(--mint-dark);
+    font-weight:800;
+    text-decoration:none;
+    font-size:15.5px;
+  }
+  .related-box a:hover{text-decoration:underline;}
+
+  footer.foot{
+    text-align:center;
+    font-size:12.5px;
+    color:var(--text-sub);
+    margin-top:34px;
+    line-height:1.7;
+  }
+  footer.foot .copyright{
+    display:inline-block;
+    margin-top:6px;
+    font-size:11px;
+    color:#9AABB0;
+  }
+
+  body{-webkit-user-select:none;-moz-user-select:none;user-select:none;}
+
+  @media (max-width:380px){
+    .device-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="eyebrow">안심여행정보 · 이심(eSIM) 등록 도우미</div>
+  <h1>부모님 폰도 문제없이!<br>이심(eSIM) 등록 가이드</h1>
+  <p>기기를 고르고 순서대로만 따라오시면 돼요. 어려운 용어 없이 설명해드릴게요.</p>
+</header>
+
+<div class="wrap">
+
+  <div class="progress-card" id="progressCard" hidden>
+    <div class="progress-top">
+      <span class="label">진행 단계</span>
+      <span class="count"><span id="stepNow">1</span> / <span id="stepTotal">7</span> 단계</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    <p class="progress-msg" id="progressMsg">준비물부터 하나씩 확인해볼까요?</p>
+  </div>
+
+  <div id="deviceSelect" class="device-select">
+    <p class="select-title">먼저, 어떤 기기인지 골라주세요</p>
+    <div class="device-grid">
+      <button class="device-card" data-device="iphone">
+        <span class="device-emoji">📱</span>
+        <span class="device-name">아이폰 (iPhone)</span>
+      </button>
+      <button class="device-card" data-device="galaxy">
+        <span class="device-emoji">📱</span>
+        <span class="device-name">갤럭시 (Galaxy)</span>
+      </button>
+    </div>
+    <p class="select-hint">※ 다른 안드로이드 기기는 갤럭시와 메뉴 이름이 비슷하지만, 제조사마다 위치가 조금씩 다를 수 있어요.</p>
+  </div>
+
+  <div id="wizard" hidden>
+    <span class="device-badge" id="deviceBadge"></span>
+    <div class="step-card" id="stepCard"></div>
+    <div class="nav-row">
+      <button class="btn btn-ghost" id="prevBtn">← 이전</button>
+      <button class="btn btn-primary" id="nextBtn">다음 →</button>
+    </div>
+    <button class="btn btn-reset" id="changeDeviceBtn" style="width:100%;margin-bottom:24px;">다른 기기로 다시 보기</button>
+  </div>
+
+  <div class="related-box">
+    <p>📖 더 많은 여행 정보가 궁금하다면</p>
+    <a href="https://ansimtravel.com/" target="_blank" rel="noopener">안심여행정보 홈에서 둘러보기 →</a>
+  </div>
+
+  <div class="disclaimer">
+    ⓘ 본 가이드는 일반적인 iOS·Android(갤럭시) 설정 화면을 기준으로 안내드려요. 기기 모델과 운영체제 버전, 통신사 정책에 따라 메뉴 이름이나 위치가 조금 다를 수 있으니, 안내와 화면이 다르면 당황하지 마시고 비슷한 이름의 메뉴를 찾아보시거나 이심 구매처 고객센터에 문의해주세요.
+  </div>
+
+  <footer class="foot">
+    안심여행정보 · 여행 전 미리 챙기는 안심 가이드<br>
+    <span class="copyright">© 2026 안심여행정보. All rights reserved. 본 콘텐츠(텍스트·구성·디자인)의 무단 복제, 캡처, 재배포 및 상업적 이용을 금지합니다.</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+
+  var pathBox = function(label, chips){
+    return '<p class="path-label">'+label+'</p>' +
+      '<div class="path-box">' +
+      chips.map(function(c,i){
+        return (i>0 ? '<span class="arrow">→</span>' : '') + '<span class="chip">'+c+'</span>';
+      }).join('') +
+      '</div>';
+  };
+
+  var STEPS = [
+    {
+      key:'prep', icon:'🧭', title:'① 시작 전 확인할 것 3가지',
+      render: function(d){
+        return '' +
+          '<p>등록을 시작하기 전에 이 3가지만 먼저 확인해주세요. 미리 체크해두면 중간에 막히는 일이 훨씬 줄어들어요.</p>' +
+          '<ol>' +
+            '<li><b>자급제(언락) 기기인지 확인하기</b> — 특정 통신사 약정으로 산 폰(캐리어락)은 다른 통신사의 eSIM이 제한될 수 있어요. 자급제 폰이거나 이미 언락된 폰이면 걱정 없어요.</li>' +
+            '<li><b>최신 소프트웨어로 업데이트하기</b> — 오래된 버전에서는 eSIM 추가 메뉴가 아예 안 보이는 경우가 있어요.</li>' +
+            '<li><b>Wi-Fi에 연결해두기</b> — eSIM을 설치하는 과정 자체에 인터넷이 필요해요. 가급적 출국 전 집이나 회사 Wi-Fi에서 미리 설치해두는 게 안전해요.</li>' +
+          '</ol>' +
+          '<div class="warn-box"><b>확인해주세요</b> — 통신사 약정폰이라 캐리어락이 걸려있다면, eSIM 추가 화면까지는 나오는데 실제 등록 단계에서 막힐 수 있어요. 걱정되시면 지금 쓰시는 통신사 고객센터에 "이 폰 언락(자급제 전환) 되나요?"라고 먼저 확인해보세요.</div>' +
+          '<p>여행용 eSIM 상품을 이미 구매하셨다면, 이메일이나 문자로 온 <b>QR코드 또는 활성화 코드</b>를 미리 열어두세요.</p>';
+      }
+    },
+    {
+      key:'check', icon:'🔍', title:'② 이심(eSIM) 되는 폰인지 확인',
+      render: function(d){
+        return '' +
+          '<p>전화 앱을 열고 <b>*#06#</b>을 눌러보세요. EID라는 번호가 뜨면 이 폰에 eSIM 기능이 들어있다는 뜻이에요.</p>' +
+          pathBox('확인 방법', ['전화 앱 열기','다이얼 화면에서 *#06# 입력','EID 번호 확인']) +
+          '<div class="tip-box"><b>알아두면 좋아요</b> — EID가 뜬다고 100% 등록이 보장되는 건 아니에요. EID는 "이 폰에 eSIM 부품이 있다"는 뜻일 뿐, 캐리어락이나 아주 예외적인 기기 정책 때문에 실제 등록이 막히는 경우도 있어요. 확실하게 하고 싶다면 ①에서 확인한 언락 여부와 함께, 설정 앱에서 "eSIM 추가" 메뉴가 실제로 보이는지도 같이 확인해보세요.</div>';
+      }
+    },
+    {
+      key:'add', icon:'➕', title:'③ eSIM 추가하기',
+      render: function(d){
+        if(d==='iphone'){
+          return '' +
+            '<p>이제 실제로 eSIM을 추가해볼게요. QR코드를 준비해두셨다면 바로 진행할 수 있어요.</p>' +
+            pathBox('아이폰 경로', ['설정','셀룰러','eSIM 추가','QR 코드 사용']) +
+            '<ol><li>카메라 화면이 뜨면 QR코드를 비춰주세요.</li><li>"셀룰러 요금제 추가"가 뜨면 계속을 눌러주세요.</li><li>안내에 따라 완료하면 잠시 후 등록이 끝나요.</li></ol>' +
+            '<div class="tip-box">이미 다른 회선(한국 유심)을 쓰고 계시다면, 등록 마지막에 "기본 회선"과 "셀룰러 데이터"를 어떤 회선으로 쓸지 물어봐요. 지금은 일단 안내대로 넘어가시고, ⑥단계에서 다시 정확히 설정해드릴게요.</div>';
+        }
+        return '' +
+          '<p>이제 실제로 eSIM을 추가해볼게요. QR코드를 준비해두셨다면 바로 진행할 수 있어요.</p>' +
+          pathBox('갤럭시 경로', ['설정','연결','SIM 관리자','eSIM 추가']) +
+          '<ol><li>"QR코드 스캔"을 선택해주세요.</li><li>카메라로 QR코드를 비춰주세요.</li><li>안내에 따라 진행하면 잠시 후 등록이 완료돼요.</li></ol>' +
+          '<div class="tip-box">등록이 끝나면 같은 "SIM 관리자" 화면에서 통화·문자·모바일 데이터를 각각 어떤 유심으로 쓸지 지정할 수 있어요. 이 부분은 ⑥단계에서 자세히 설명해드릴게요.</div>';
+      }
+    },
+    {
+      key:'qr', icon:'📷', title:'④ QR 코드가 안 읽힐 때',
+      render: function(d){
+        var m1 = d==='iphone'
+          ? '문자·메일로 받은 QR 이미지를 <b>길게 눌러</b> 설치하기(안내가 뜨면 그대로 따라가기), 또는 최신 iOS라면 "eSIM 추가 → QR 코드 사용 → 사진 앱에서 선택"으로 저장된 QR 이미지를 바로 불러올 수 있어요.'
+          : '사진(갤러리) 앱에서 QR 이미지를 <b>길게 눌러</b> "휴대전화에 요금제 추가"를 선택하거나, 홈 화면을 길게 눌러 이미지 인식 기능(서클로 검색 등)으로 QR을 인식시켜보세요.';
+        return '' +
+          '<p>QR코드가 카메라로 잘 안 읽힐 때는 아래 3가지 방법 중 하나를 시도해보세요.</p>' +
+          '<ol class="method-list">' +
+            '<li>'+m1+'</li>' +
+            '<li>화면 밝기를 조금 높이거나, QR코드를 인쇄물이나 다른 화면에 크게 띄운 뒤 카메라로 다시 스캔해보세요.</li>' +
+            '<li>그래도 안 되면 이심 구매처에서 준 <b>활성화 코드(영문+숫자)</b>를 "직접 입력" 화면에 손으로 입력해보세요. QR은 이 코드를 그림으로 바꿔놓은 것뿐이라, 코드를 직접 입력해도 결과는 같아요.</li>' +
+          '</ol>' +
+          '<div class="warn-box"><b>주의</b> — 설치 도중에는 다른 앱으로 이동하지 마시고, 설치가 끝날 때까지 화면을 켜둔 채 기다려주세요. 중간에 나가면 설치가 실패할 수 있어요.</div>';
+      }
+    },
+    {
+      key:'roaming', icon:'🌍', title:'⑤ 데이터 로밍 켜기',
+      render: function(d){
+        if(d==='iphone'){
+          return '' +
+            '<p>eSIM을 설치했어도, <b>데이터 로밍</b>을 켜지 않으면 해외에서 인터넷이 안 터져요. 지금 한국 유심 하나만 쓰고 계신지, 유심+eSIM 두 개를 같이 쓰고 계신지에 따라 경로가 조금 달라요.</p>' +
+            '<p class="sub-head">📶 회선을 1개만 쓰는 경우</p>' +
+            pathBox('경로', ['설정','셀룰러','셀룰러 데이터 옵션','데이터 로밍 켜기']) +
+            '<p class="sub-head">📶 회선을 2개(한국 유심 + 여행 eSIM) 같이 쓰는 경우</p>' +
+            pathBox('경로', ['설정','셀룰러','여행용 eSIM 회선 선택','셀룰러 데이터 옵션','데이터 로밍 켜기']) +
+            '<div class="warn-box"><b>여기서 자주 헷갈려요</b> — 회선을 선택한 다음 바로 데이터 로밍이 보이지 않고, 한 번 더 "셀룰러 데이터 옵션"을 눌러야 데이터 로밍 스위치가 나와요. 이 단계를 빠뜨리고 못 찾겠다고 하시는 경우가 많으니 꼭 기억해주세요.</div>';
+        }
+        return '' +
+          '<p>eSIM을 설치했어도, <b>데이터 로밍</b>을 켜지 않으면 해외에서 인터넷이 안 터져요.</p>' +
+          pathBox('경로', ['설정','연결','모바일 네트워크','데이터 로밍 켜기']) +
+          '<div class="warn-box"><b>먼저 확인해주세요</b> — 데이터 로밍을 켜기 전에, "설정 → 연결 → SIM 관리자"에서 <b>모바일 데이터</b> 항목이 여행용 eSIM으로 지정되어 있는지 먼저 확인해주세요. 한국 유심이 모바일 데이터로 지정된 채 로밍을 켜면 한국 유심 쪽에 로밍 요금이 발생할 수 있어요.</div>';
+      }
+    },
+    {
+      key:'split', icon:'🔀', title:'⑥ 통화는 한국 유심, 데이터는 여행 eSIM으로',
+      render: function(d){
+        if(d==='iphone'){
+          return '' +
+            '<p>해외에서 요금 폭탄을 피하는 가장 확실한 방법은, <b>통화·문자는 한국 유심</b>으로, <b>데이터는 여행용 eSIM</b>으로 나눠 쓰는 거예요.</p>' +
+            pathBox('경로', ['설정','셀룰러']) +
+            '<ul>' +
+              '<li><b>기본 회선</b>: 한국 번호(통화·문자용)로 지정</li>' +
+              '<li><b>셀룰러 데이터</b>: 여행용 eSIM으로 지정</li>' +
+            '</ul>' +
+            '<div class="info-box">이렇게 해두면 전화와 문자는 그대로 한국 번호로 오고, 인터넷만 저렴한 여행 eSIM 데이터를 쓰게 돼요. 한국 유심 쪽 데이터 로밍은 반드시 꺼두시는 것도 잊지 마세요.</div>';
+        }
+        return '' +
+          '<p>해외에서 요금 폭탄을 피하는 가장 확실한 방법은, <b>통화·문자는 한국 유심</b>으로, <b>데이터는 여행용 eSIM</b>으로 나눠 쓰는 거예요.</p>' +
+          pathBox('경로', ['설정','연결','SIM 관리자']) +
+          '<ul>' +
+            '<li><b>통화 / 문자메시지</b>: 한국 유심으로 지정</li>' +
+            '<li><b>모바일 데이터</b>: 여행용 eSIM으로 지정</li>' +
+          '</ul>' +
+          '<div class="info-box">이렇게 해두면 전화와 문자는 그대로 한국 번호로 오고, 인터넷만 여행 eSIM 데이터를 쓰게 돼요. 한국 유심 쪽 데이터 로밍은 반드시 꺼두시는 것도 잊지 마세요.</div>';
+      }
+    },
+    {
+      key:'trouble', icon:'🛠️', title:'⑦ 그래도 인터넷이 안 될 때',
+      render: function(d){
+        return '' +
+          '<p>등록은 끝났는데 현지에서 인터넷이 안 터진다면, 아래 순서대로 확인해보세요.</p>' +
+          '<ul>' +
+            '<li>여행용 eSIM 회선의 <b>데이터 로밍이 켜져 있는지</b> 다시 확인하기</li>' +
+            '<li><b>모바일 데이터로 지정된 회선</b>이 여행용 eSIM이 맞는지 확인하기 (한국 유심이 선택돼 있으면 안 터져요)</li>' +
+            '<li>비행기 모드를 껐다 켜거나, 기기를 한 번 재부팅하기</li>' +
+            '<li>네트워크 선택이 "자동"으로 되어 있는지 확인하고, 계속 안 잡히면 잠시 "수동"으로 바꿔 다른 제휴망을 선택해보기</li>' +
+            '<li>구매한 지 얼마 안 됐다면, 활성화까지 몇 분 정도 걸릴 수 있으니 5~10분 후 다시 시도해보기</li>' +
+          '</ul>' +
+          '<div class="tip-box"><b>참고</b> — 일부 통신사는 "데이터로밍 완전 차단" 서비스를 별도로 제공해요. 이 서비스에 가입해도 문자(SMS)는 대부분 계속 받을 수 있지만, 사진이 포함된 MMS는 통신사·요금제에 따라 처리 방식이 달라요. 정확한 조건은 가입 전 해당 통신사 고객센터에 한 번 확인해보시는 게 안전해요.</div>' +
+          '<p>그래도 해결이 안 되면, 여행용 eSIM을 구매한 곳의 고객센터(카카오톡 채널·문의하기)로 캡처와 함께 문의하시는 게 가장 빨라요.</p>';
+      }
+    }
+  ];
+
+  var currentDevice = null;
+  var currentStep = 0;
+
+  var deviceSelect = document.getElementById('deviceSelect');
+  var wizard = document.getElementById('wizard');
+  var progressCard = document.getElementById('progressCard');
+  var stepCard = document.getElementById('stepCard');
+  var deviceBadge = document.getElementById('deviceBadge');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  var changeDeviceBtn = document.getElementById('changeDeviceBtn');
+
+  function renderStep(){
+    var s = STEPS[currentStep];
+    stepCard.innerHTML =
+      '<div class="step-head"><span class="icon">'+s.icon+'</span><h2>'+s.title+'</h2></div>' +
+      s.render(currentDevice);
+
+    document.getElementById('stepNow').textContent = currentStep+1;
+    document.getElementById('stepTotal').textContent = STEPS.length;
+    document.getElementById('barFill').style.width = Math.round(((currentStep+1)/STEPS.length)*100) + '%';
+
+    var msgs = [
+      '준비물부터 하나씩 확인해볼까요?',
+      '내 폰이 이심 되는지 확인해봐요.',
+      '이제 진짜로 eSIM을 추가해볼게요.',
+      'QR이 안 읽혀도 당황하지 마세요.',
+      '데이터 로밍, 이 단계가 제일 중요해요.',
+      '요금 폭탄 방지! 회선을 나눠볼게요.',
+      '마지막 점검이에요. 거의 다 왔어요!'
+    ];
+    document.getElementById('progressMsg').textContent = msgs[currentStep] || '';
+
+    prevBtn.disabled = currentStep === 0;
+    nextBtn.textContent = (currentStep === STEPS.length-1) ? '처음으로 ↺' : '다음 →';
+
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  deviceSelect.addEventListener('click', function(e){
+    var card = e.target.closest('.device-card');
+    if(!card) return;
+    currentDevice = card.getAttribute('data-device');
+    currentStep = 0;
+    deviceBadge.textContent = (currentDevice==='iphone' ? '📱 아이폰 기준으로 안내 중' : '📱 갤럭시 기준으로 안내 중');
+    deviceSelect.hidden = true;
+    wizard.hidden = false;
+    progressCard.hidden = false;
+    renderStep();
+  });
+
+  nextBtn.addEventListener('click', function(){
+    if(currentStep === STEPS.length-1){
+      currentStep = 0;
+      wizard.hidden = true;
+      progressCard.hidden = true;
+      deviceSelect.hidden = false;
+      currentDevice = null;
+      window.scrollTo({top:0, behavior:'smooth'});
+      return;
+    }
+    currentStep++;
+    renderStep();
+  });
+
+  prevBtn.addEventListener('click', function(){
+    if(currentStep === 0) return;
+    currentStep--;
+    renderStep();
+  });
+
+  changeDeviceBtn.addEventListener('click', function(){
+    wizard.hidden = true;
+    progressCard.hidden = true;
+    deviceSelect.hidden = false;
+    currentDevice = null;
+    currentStep = 0;
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  // 콘텐츠 무단 복제 방지용 최소 저지선
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  console.log('이 페이지는 안심여행정보(© 2026)가 제작한 콘텐츠입니다. 무단 복제·재배포를 금지합니다.');
+})();
+</script>
+
+</body>
+</html>
