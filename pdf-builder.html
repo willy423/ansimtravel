@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>안심여행정보 가이드 PDF 빌더</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Literata:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" crossorigin="anonymous">
+<style>
+
+  @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Literata:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --paper:#F7F3EA;
+    --paper-alt:#EEE6D3;
+    --paper-deep:#E2D8BE;
+    --ink:#1E2A28;
+    --ink-soft:#425350;
+    --ink-faint:#657672;
+    --line:#C9BFA0;
+    --teal:#0B5D52;
+    --teal-deep:#08423B;
+    --amber:#C9A227;
+    --amber-deep:#9C7D1C;
+    --brick:#8B3A3A;
+    --shadow:#1E2A28;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper-deep);
+    color:var(--ink);
+    font-family:'Literata', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+  }
+  a{ color:var(--teal-deep); }
+
+  /* ---------- shell / header ---------- */
+  .shell{ max-width:1400px; margin:0 auto; padding:clamp(14px,3vw,32px); }
+  .letterhead{ text-align:center; margin-bottom:20px; }
+  .brand__mark{
+    width:38px; height:38px; border-radius:50%; margin:0 auto 8px;
+    border:2px solid var(--ink); display:flex; align-items:center; justify-content:center;
+    font-size:17px; background:var(--amber); color:var(--ink);
+  }
+  .brand__name{
+    font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:26px;
+    letter-spacing:.02em; text-transform:uppercase;
+  }
+  .brand__tag{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--ink-soft);
+    letter-spacing:.03em; margin-top:4px;
+  }
+
+  /* ---------- workspace layout ---------- */
+  .workspace{ display:grid; grid-template-columns:minmax(320px,420px) 1fr; gap:22px; align-items:start; }
+  @media (max-width:900px){ .workspace{ grid-template-columns:1fr; } }
+
+  .pane{
+    background:var(--paper); border:2px solid var(--ink); box-shadow:5px 5px 0 var(--shadow);
+  }
+  .pane__head{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:12px 16px; border-bottom:2px dashed var(--line); background:var(--paper-alt);
+  }
+  .pane__title{
+    font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:17px;
+    text-transform:uppercase; letter-spacing:.03em;
+  }
+
+  /* ---------- editor ---------- */
+  .editor{ max-height:calc(100vh - 160px); overflow-y:auto; }
+  .field-group{ border-top:1px solid var(--line); padding:16px; }
+  .field-group:first-of-type{ border-top:none; }
+  .field-group__label{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; font-weight:600; letter-spacing:.05em;
+    text-transform:uppercase; color:var(--amber-deep); margin:0 0 10px;
+  }
+  .field-group__hint{
+    font-family:'Literata', serif; font-size:13px; color:var(--ink-faint);
+    margin:6px 0 0; font-style:italic; line-height:1.5;
+  }
+
+  label.field-label{
+    display:block; font-family:'IBM Plex Mono', monospace; font-size:11.5px; font-weight:600;
+    color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em; margin:10px 0 5px;
+  }
+  label.field-label:first-child{ margin-top:0; }
+  input[type="text"], input[type="date"], textarea, select{
+    width:100%; font-family:'IBM Plex Mono', monospace; font-size:13.5px; padding:8px 10px;
+    border:1.5px solid var(--line); background:#fff; color:var(--ink); border-radius:2px;
+  }
+  textarea{ font-family:'Literata', serif; font-size:13.5px; line-height:1.6; resize:vertical; }
+  select, input[type="date"]{ cursor:pointer; }
+  input:focus, textarea:focus, select:focus{ outline:2px solid var(--teal); outline-offset:1px; }
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:480px){ .two-col{ grid-template-columns:1fr; } }
+
+  .aff-card{
+    border:1.5px solid var(--line); background:var(--paper-alt); padding:12px; margin-bottom:10px; position:relative;
+  }
+  .aff-card__num{
+    font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:12px;
+    color:var(--ink-faint); position:absolute; top:8px; right:10px;
+  }
+  .remove-btn{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--brick); background:none;
+    border:1px solid var(--brick); border-radius:2px; padding:3px 8px; cursor:pointer; margin-top:8px;
+  }
+  .remove-btn:hover{ background:var(--brick); color:#fff; }
+  .add-btn{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; border:1.5px dashed var(--line);
+    background:transparent; color:var(--ink-soft); padding:8px 12px; cursor:pointer; border-radius:2px; width:100%;
+  }
+  .add-btn:hover{ border-color:var(--amber-deep); color:var(--amber-deep); }
+
+  /* ---------- preview toolbar ---------- */
+  .preview-toolbar{ display:flex; align-items:center; gap:10px; }
+  .dl-btn{
+    font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:13.5px;
+    text-transform:uppercase; letter-spacing:.03em; background:var(--amber); color:var(--ink);
+    border:2px solid var(--ink); padding:8px 16px; cursor:pointer; box-shadow:3px 3px 0 var(--ink);
+    border-radius:2px; white-space:nowrap;
+  }
+  .dl-btn:hover{ transform:translate(1px,1px); box-shadow:2px 2px 0 var(--ink); }
+  .dl-btn:active{ transform:translate(3px,3px); box-shadow:0 0 0 var(--ink); }
+
+  /* ---------- preview / exported document ---------- */
+  .preview-wrap{ padding:20px; background:var(--paper-deep); display:flex; justify-content:center; }
+  .doc{
+    width:100%; max-width:720px; background:#fff; color:#141414; padding:32px 30px 40px;
+    font-family:'Literata', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', Helvetica, Arial, sans-serif;
+    font-size:16.5px; line-height:1.85; text-rendering:optimizeLegibility;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  }
+
+  .doc__cover{
+    border:2px solid var(--ink); padding:22px 24px; margin-bottom:26px;
+    background:linear-gradient(135deg, var(--paper) 0%, var(--paper-alt) 100%);
+    page-break-inside:avoid; break-inside:avoid;
+  }
+  .doc__cover-eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--amber-deep); margin:0 0 4px;
+  }
+  .doc__cover-title{
+    font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:32px; margin:0 0 3px;
+    text-wrap:balance; color:var(--ink); line-height:1.2;
+  }
+  .doc__cover-sub{
+    font-family:'IBM Plex Mono', monospace; font-size:13.5px; color:var(--ink-soft); margin:0;
+  }
+  .doc__cover-rule{
+    border-top:2px dashed var(--line); margin-top:16px;
+  }
+  .doc__cover-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:16px;
+  }
+  .doc__cover-stat{ font-family:'IBM Plex Mono', monospace; }
+  .doc__cover-stat span{ display:block; }
+  .doc__cover-stat .k{ font-size:11.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; }
+  .doc__cover-stat .v{ font-size:15.5px; color:var(--ink); font-weight:600; margin-top:3px; }
+
+  .doc__section{ margin-bottom:28px; }
+  .doc__section-title{
+    font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:20px;
+    text-transform:uppercase; letter-spacing:.02em; color:var(--ink);
+    border-bottom:2px solid var(--ink); padding-bottom:6px; margin:0 0 14px;
+  }
+  .doc-section-h{
+    font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:13.5px;
+    text-transform:uppercase; letter-spacing:.04em; color:var(--teal-deep); margin:16px 0 7px;
+    page-break-after:avoid; break-after:avoid;
+  }
+  .doc-day-h{
+    font-family:'Big Shoulders Display', sans-serif; font-weight:700; font-size:16.5px;
+    color:var(--ink); background:var(--paper-alt); border-left:3px solid var(--amber-deep);
+    padding:5px 9px; margin:16px 0 7px;
+    page-break-after:avoid; break-after:avoid;
+  }
+  .doc-p{ margin:0 0 10px; page-break-inside:avoid; break-inside:avoid; }
+  .doc-list{ margin:0 0 12px; padding-left:22px; }
+  .doc-list li{ margin-bottom:6px; page-break-inside:avoid; break-inside:avoid; }
+  .doc-table{ width:100%; border-collapse:collapse; margin:0 0 14px; font-size:14.5px; }
+  .doc-table th, .doc-table td{ border:1px solid #ccc2a6; padding:7px 8px; text-align:left; vertical-align:top; }
+  .doc-table th{ background:var(--paper-alt); font-family:'IBM Plex Mono', monospace; font-size:13px; text-transform:uppercase; letter-spacing:.02em; }
+  .doc-table td{ font-family:'IBM Plex Mono', monospace; font-size:13.5px; }
+  .doc-table tr{ page-break-inside:avoid; break-inside:avoid; }
+  .doc-table thead{ display:table-header-group; }
+
+  .aff-item{
+    border:1px solid var(--line); background:var(--paper); padding:12px 13px; margin-bottom:9px;
+    page-break-inside:avoid; break-inside:avoid;
+  }
+  .aff-item__top{ display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap; }
+  .aff-item__label{ font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:14.5px; color:var(--ink); }
+  .aff-item__price{ font-family:'IBM Plex Mono', monospace; font-size:14px; color:var(--amber-deep); white-space:nowrap; }
+  .aff-item__note{ font-size:14px; color:var(--ink-soft); margin-top:4px; }
+  .aff-item__link{ font-family:'IBM Plex Mono', monospace; font-size:13px; word-break:break-all; display:inline-block; margin-top:6px; }
+
+  .doc__empty{ text-align:center; color:#999; font-family:'IBM Plex Mono', monospace; font-size:14px; padding:60px 10px; }
+
+  .doc__footer{
+    margin-top:32px; padding-top:16px; border-top:2px dashed var(--line);
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--ink-soft); text-align:center; line-height:1.8;
+  }
+  .doc__footer strong{ color:var(--ink); font-family:'Big Shoulders Display', sans-serif; font-size:14px; letter-spacing:.02em; }
+  .doc__footer-cta{ margin-top:16px; page-break-inside:avoid; break-inside:avoid; }
+  .doc__footer-cta a{
+    display:inline-block; font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:13.5px;
+    text-transform:uppercase; letter-spacing:.03em; background:var(--amber); color:var(--ink) !important;
+    border:2px solid var(--ink); padding:9px 22px; text-decoration:none; border-radius:2px;
+  }
+
+</style>
+</head>
+<body>
+
+
+<div class="shell">
+  <div class="letterhead">
+    <div class="brand__mark">✈</div>
+    <div class="brand__name">안심여행정보 가이드 PDF 빌더</div>
+    <div class="brand__tag">AI 일정·안전가이드 + 제휴 링크를 붙여넣으면 손님용 PDF로 완성됩니다 (내부 제작 도구)</div>
+  </div>
+
+  <div class="workspace">
+    <div class="pane">
+      <div class="pane__head"><span class="pane__title">편집</span></div>
+      <div class="editor" id="editorPane"></div>
+    </div>
+
+    <div class="pane">
+      <div class="pane__head">
+        <span class="pane__title">미리보기</span>
+        <div class="preview-toolbar">
+          <button type="button" class="dl-btn" id="downloadBtn">📥 PDF 다운로드</button>
+        </div>
+      </div>
+      <div class="preview-wrap">
+        <div class="doc" id="pdfPreview"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var POST_CATEGORIES = [
+    { value:'flight', icon:'✈', title:'항공권 추천' },
+    { value:'hotel', icon:'🏨', title:'호텔 추천' },
+    { value:'food', icon:'🍽', title:'맛집 추천' },
+    { value:'spot', icon:'📍', title:'가볼 만한 곳 추천' },
+    { value:'essentials', icon:'🧳', title:'해외여행 필수 정보' },
+    { value:'safety-rules', icon:'🛡', title:'해외여행 필수 안전수칙' },
+    { value:'etc', icon:'📌', title:'참고 정보' },
+    { value:'crisis', icon:'🚨', title:'해외여행 안전 & 위기 대처' },
+    { value:'more', icon:'🔗', title:'더 많은 정보 확인하기' },
+    { value:'fx', icon:'💱', title:'환율 계산기' }
+  ];
+  function categoryMeta(v){
+    for(var i=0;i<POST_CATEGORIES.length;i++){ if(POST_CATEGORIES[i].value === v) return POST_CATEGORIES[i]; }
+    return POST_CATEGORIES[POST_CATEGORIES.length-1];
+  }
+  function blankPost(){ return { category:'etc', label:'', link:'', note:'' }; }
+
+  var state = {
+    customerName:'우영미 고객님 (예시)',
+    destination:'마카오',
+    travelStart:'2026-10-19',
+    travelEnd:'2026-10-23',
+    duration:'3박4일',
+    blogUrl:'https://ansimtravel.com',
+    posts:[
+      { category:'flight', label:'항공권 최저가 확인하기 (예시)', link:'https://ansimtravel.com/macau-flight-guide', note:'왕복 기준 최저가 비교' },
+      { category:'hotel', label:'그랜드 리스보아 팰리스 (예시)', link:'https://ansimtravel.com/macau-hotel-guide', note:'조식 포함, 코타이 스트립 도보 5분' }
+    ],
+    itineraryMd:'===== [일정 수립] =====\n\nDAY 1 (10/19) — 도착 및 호텔 체크인\n\n| 시간 | 활동 | 비고 |\n|---|---|---|\n| 14:00 | 마카오 국제공항 도착 | - |\n| 15:30 | 호텔 체크인 | 그랜드 리스보아 팰리스 |\n| 18:00 | 코타이 스트립 산책 및 저녁 | 1인당 약 MOP 150 |\n\n주의: 위 일정은 예시입니다. 실제로는 AI가 만든 [일정 수립] 프롬프트 결과를 이 칸에 그대로 붙여넣으세요.',
+    safetyMd:'===== [현지 안전가이드] =====\n\n1. 여권 사본은 별도 보관하세요.\n2. 응급 연락처: 마카오 통합 긴급전화 999\n\n주의: 위 내용은 예시입니다. AI가 만든 [현지 안전가이드] 프롬프트 결과를 이 칸에 그대로 붙여넣으세요.'
+  };
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
+  function travelDatesText(){
+    if(state.travelStart && state.travelEnd) return state.travelStart + ' ~ ' + state.travelEnd;
+    return state.travelStart || state.travelEnd || '-';
+  }
+  function mdInline(s){ return esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); }
+
+  var RE_TABLE_SEP = /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$/;
+  var RE_OL = /^(?:\d{1,3}[.)]|\(\d{1,3}\)|[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮])\s*/;
+  var RE_UL = /^(?:[-*•·▪◦‣]|ㆍ)\s+/;
+  var RE_DAY = /^(?:DAY|Day|day)\s*\d+/;
+  var RE_SECTION = /^=+\s*\[(.+?)\]\s*=+$/;
+  var RE_HEADING = /^#{1,4}\s+(.*)$/;
+
+  function splitCells(l, delim){
+    var t = l.trim();
+    if(delim === '|'){
+      if(t.charAt(0) === '|') t = t.slice(1);
+      if(t.charAt(t.length-1) === '|') t = t.slice(0, -1);
+    }
+    return t.split(delim).map(function(c){ return c.trim(); }).filter(function(c, idx, arr){
+      return !(c === '' && idx === arr.length-1 && arr.length > 1);
+    });
+  }
+
+  function renderTableBlock(lines, delim){
+    var rows = lines.filter(function(l){ return delim !== '|' || !RE_TABLE_SEP.test(l); });
+    if(rows.length < 1) return '';
+    var cellsOf = function(l){ return splitCells(l, delim); };
+    var header = cellsOf(rows[0]);
+    var body = rows.slice(1).map(cellsOf);
+    if(header.length < 2) return '';
+    return '<table class="doc-table"><thead><tr>' +
+      header.map(function(h){ return '<th>'+mdInline(h)+'</th>'; }).join('') +
+      '</tr></thead><tbody>' +
+      body.map(function(r){ return '<tr>' + r.map(function(c){ return '<td>'+mdInline(c)+'</td>'; }).join('') + '</tr>'; }).join('') +
+      '</tbody></table>';
+  }
+
+  // 탭으로 구분된 표(채팅 UI에서 표를 복사하면 흔히 탭 구분 텍스트가 됨)를 감지
+  function looksLikeTabRow(l){ return l.indexOf('\t') !== -1; }
+
+  function renderMarkdownLite(raw){
+    var lines = String(raw||'').replace(/\r\n/g,'\n').split('\n');
+    var out = [];
+    var i = 0;
+    while(i < lines.length){
+      var line = lines[i];
+      var trimmed = line.trim();
+      if(trimmed === ''){ i++; continue; }
+
+      var sectionMatch = trimmed.match(RE_SECTION);
+      if(sectionMatch){ out.push('<p class="doc-section-h">'+esc(sectionMatch[1])+'</p>'); i++; continue; }
+
+      var headingMatch = trimmed.match(RE_HEADING);
+      if(headingMatch){ out.push('<p class="doc-section-h">'+mdInline(headingMatch[1])+'</p>'); i++; continue; }
+
+      // 파이프(|) 마크다운 표
+      if(trimmed.charAt(0) === '|' && trimmed.indexOf('|', 1) !== -1){
+        var tLines = [];
+        while(i < lines.length && lines[i].trim().charAt(0) === '|'){ tLines.push(lines[i].trim()); i++; }
+        var tableHtml = renderTableBlock(tLines, '|');
+        if(tableHtml) out.push(tableHtml);
+        continue;
+      }
+
+      // 탭 구분 표 (연속 2줄 이상)
+      if(looksLikeTabRow(line) && i+1 < lines.length && looksLikeTabRow(lines[i+1])){
+        var tabLines = [];
+        while(i < lines.length && looksLikeTabRow(lines[i])){ tabLines.push(lines[i]); i++; }
+        var tabHtml = renderTableBlock(tabLines, '\t');
+        if(tabHtml){ out.push(tabHtml); continue; }
+        // 표로 못 만들면 각 줄을 그냥 일반 문단으로 처리
+        tabLines.forEach(function(tl){ out.push('<p class="doc-p">'+mdInline(tl.trim())+'</p>'); });
+        continue;
+      }
+
+      if(RE_OL.test(trimmed)){
+        var oItems = [];
+        while(i < lines.length && lines[i].trim() !== '' && RE_OL.test(lines[i].trim())){
+          oItems.push(lines[i].trim().replace(RE_OL, '')); i++;
+        }
+        out.push('<ol class="doc-list">'+oItems.map(function(it){ return '<li>'+mdInline(it)+'</li>'; }).join('')+'</ol>');
+        continue;
+      }
+
+      if(RE_UL.test(trimmed)){
+        var uItems = [];
+        while(i < lines.length && lines[i].trim() !== '' && RE_UL.test(lines[i].trim())){
+          uItems.push(lines[i].trim().replace(RE_UL, '')); i++;
+        }
+        out.push('<ul class="doc-list">'+uItems.map(function(it){ return '<li>'+mdInline(it)+'</li>'; }).join('')+'</ul>');
+        continue;
+      }
+
+      if(RE_DAY.test(trimmed)){
+        out.push('<p class="doc-day-h">'+mdInline(trimmed)+'</p>'); i++; continue;
+      }
+
+      // 그 외 일반 줄: 줄 단위로 각각 별도 문단 처리 (여러 줄을 하나로 합치지 않음 -
+      // 채팅 AI 결과를 그대로 붙여넣었을 때 문단이 뒤섞이는 것을 방지)
+      out.push('<p class="doc-p">'+mdInline(trimmed)+'</p>');
+      i++;
+    }
+    return out.join('\n');
+  }
+
+  function affItemHTML(a){
+    if(!a.label && !a.link) return '';
+    var html = '<div class="aff-item"><div class="aff-item__top">' +
+      '<span class="aff-item__label">'+esc(a.label)+'</span>' +
+    '</div>';
+    if(a.note) html += '<div class="aff-item__note">'+esc(a.note)+'</div>';
+    if(a.link) html += '<div class="aff-item__link">▶ <a href="'+esc(a.link)+'" target="_blank" rel="noopener">안심여행정보에서 자세히 보기</a></div>';
+    html += '</div>';
+    return html;
+  }
+
+  function buildPostSections(){
+    var byCat = {}, order = [];
+    state.posts.forEach(function(p){
+      if(!p.label && !p.link) return;
+      if(!byCat[p.category]){ byCat[p.category] = []; order.push(p.category); }
+      byCat[p.category].push(p);
+    });
+    return order.map(function(cat){
+      var meta = categoryMeta(cat);
+      var items = byCat[cat].map(affItemHTML).join('');
+      if(!items) return '';
+      return '<div class="doc__section"><p class="doc__section-title">'+meta.icon+' '+esc(meta.title)+'</p>'+items+'</div>';
+    }).join('');
+  }
+
+  function buildPreviewHTML(){
+    var hasAny = state.customerName || state.destination || state.itineraryMd || state.safetyMd ||
+      state.posts.some(function(p){ return p.label||p.link; });
+    if(!hasAny){
+      return '<div class="doc__empty">왼쪽에서 내용을 입력하면<br>여기에 실시간으로 미리보기가 표시됩니다.</div>';
+    }
+
+    var html = '';
+    html += '<div class="doc__cover">' +
+      '<p class="doc__cover-eyebrow">안심여행정보 · TRAVEL GUIDE</p>' +
+      '<p class="doc__cover-title">'+esc(state.destination || '여행지 미정')+' 여행 가이드</p>' +
+      '<p class="doc__cover-sub">'+esc(state.customerName || '고객명 미입력')+' 님을 위해 준비했습니다</p>' +
+      '<div class="doc__cover-rule"></div>' +
+      '<div class="doc__cover-grid">' +
+        '<div class="doc__cover-stat"><span class="k">여행 기간</span><span class="v">'+esc(state.duration||'-')+'</span></div>' +
+        '<div class="doc__cover-stat"><span class="k">일정</span><span class="v">'+esc(travelDatesText())+'</span></div>' +
+        '<div class="doc__cover-stat"><span class="k">발행</span><span class="v">안심여행정보</span></div>' +
+      '</div>' +
+    '</div>';
+
+    html += buildPostSections();
+
+    if(state.itineraryMd && state.itineraryMd.trim()){
+      html += '<div class="doc__section"><p class="doc__section-title">🗓 상세 일정</p>'+renderMarkdownLite(state.itineraryMd)+'</div>';
+    }
+    if(state.safetyMd && state.safetyMd.trim()){
+      html += '<div class="doc__section"><p class="doc__section-title">🛡 현지 안전가이드</p>'+renderMarkdownLite(state.safetyMd)+'</div>';
+    }
+    html += '<div class="doc__footer"><strong>안심여행정보</strong><br>' +
+      '이 가이드는 안심여행정보가 자유여행을 하시는 분들을 위해 직접 준비했습니다.<br>' +
+      '요금·운영 정보는 예약 전 반드시 한 번 더 확인해 주세요.';
+    if(state.blogUrl){
+      html += '<div class="doc__footer-cta"><a href="'+esc(state.blogUrl)+'" target="_blank" rel="noopener">▶ 안심여행정보 바로가기</a></div>';
+    }
+    html += '</div>';
+
+    return html;
+  }
+
+  function renderPreview(){ document.getElementById('pdfPreview').innerHTML = buildPreviewHTML(); }
+
+  function postCardHTML(idx, p, removable){
+    var h = '<div class="aff-card">';
+    h += '<span class="aff-card__num">#'+(idx+1)+'</span>';
+    h += '<label class="field-label">카테고리</label>' +
+      '<select data-group="posts" data-idx="'+idx+'" data-field="category">' +
+        POST_CATEGORIES.map(function(c){ return '<option value="'+c.value+'"'+(p.category===c.value?' selected':'')+'>'+c.icon+' '+c.title+'</option>'; }).join('') +
+      '</select>' +
+      '<label class="field-label">항목명</label>' +
+      '<input type="text" data-group="posts" data-idx="'+idx+'" data-field="label" value="'+esc(p.label)+'">' +
+      '<label class="field-label">관련 게시물 링크 (안심여행정보 블로그 글 주소)</label>' +
+      '<input type="text" data-group="posts" data-idx="'+idx+'" data-field="link" value="'+esc(p.link)+'" placeholder="https://ansimtravel.com/...">' +
+      '<label class="field-label">한줄 설명</label>' +
+      '<input type="text" data-group="posts" data-idx="'+idx+'" data-field="note" value="'+esc(p.note)+'">';
+    if(removable) h += '<button type="button" class="remove-btn" data-remove="posts" data-remove-idx="'+idx+'">이 게시물 삭제</button>';
+    h += '</div>';
+    return h;
+  }
+
+  function buildEditorHTML(){
+    var html = '';
+    html += '<div class="field-group">' +
+      '<p class="field-group__label">기본 정보</p>' +
+      '<label class="field-label">고객명</label><input type="text" data-field="customerName" value="'+esc(state.customerName)+'">' +
+      '<div class="two-col">' +
+        '<div><label class="field-label">여행지</label><input type="text" data-field="destination" value="'+esc(state.destination)+'"></div>' +
+        '<div><label class="field-label">여행 기간</label><input type="text" data-field="duration" value="'+esc(state.duration)+'"></div>' +
+      '</div>' +
+      '<div class="two-col">' +
+        '<div><label class="field-label">출발일</label><input type="date" data-field="travelStart" value="'+esc(state.travelStart)+'"></div>' +
+        '<div><label class="field-label">귀국일</label><input type="date" data-field="travelEnd" value="'+esc(state.travelEnd)+'"></div>' +
+      '</div>' +
+      '<label class="field-label">블로그 홈 주소 (하단 바로가기 버튼)</label><input type="text" data-field="blogUrl" value="'+esc(state.blogUrl)+'" placeholder="https://ansimtravel.com">' +
+    '</div>';
+
+    html += '<div class="field-group">' +
+      '<p class="field-group__label">관련 블로그 게시물</p>' +
+      state.posts.map(function(p,i){ return postCardHTML(i, p, state.posts.length>1); }).join('') +
+      '<button type="button" class="add-btn" data-add="posts">+ 게시물 추가</button>' +
+      '<p class="field-group__hint">카테고리를 고르고, 안심여행정보에 이미 올린 항공권·호텔·맛집 등의 블로그 글 주소를 넣으면 손님이 눌러서 바로 이동할 수 있어요. 필요한 만큼 추가하세요.</p>' +
+    '</div>';
+
+    html += '<div class="field-group">' +
+      '<p class="field-group__label">상세 일정 (AI 결과 붙여넣기)</p>' +
+      '<textarea rows="9" data-field="itineraryMd" placeholder="AI가 만든 [일정 수립] 섹션 결과를 그대로 붙여넣으세요">'+esc(state.itineraryMd)+'</textarea>' +
+      '<p class="field-group__hint">표·번호 리스트 형태 그대로 붙여넣으면 자동으로 보기 좋게 정리돼요. ChatGPT/Gemini 답변 화면에서 마우스로 드래그해서 복사하면 표 구조가 깨질 수 있어요 — 답변 아래에 있는 "복사" 버튼을 눌러서 붙여넣으면 더 안전해요.</p>' +
+    '</div>';
+
+    html += '<div class="field-group">' +
+      '<p class="field-group__label">현지 안전가이드 (AI 결과 붙여넣기)</p>' +
+      '<textarea rows="7" data-field="safetyMd" placeholder="AI가 만든 [현지 안전가이드] 섹션 결과를 그대로 붙여넣으세요">'+esc(state.safetyMd)+'</textarea>' +
+    '</div>';
+
+    return html;
+  }
+
+  function renderEditor(){
+    document.getElementById('editorPane').innerHTML = buildEditorHTML();
+    bindEditorEvents();
+  }
+
+  function bindEditorEvents(){
+    var pane = document.getElementById('editorPane');
+
+    pane.querySelectorAll('[data-field]').forEach(function(el){
+      var group = el.getAttribute('data-group');
+      var field = el.getAttribute('data-field');
+      var idxAttr = el.getAttribute('data-idx');
+      var onChange = function(){
+        if(group){
+          state[group][Number(idxAttr)][field] = el.value;
+        } else {
+          state[field] = el.value;
+        }
+        renderPreview();
+      };
+      el.addEventListener('input', onChange);
+      if(el.tagName === 'SELECT') el.addEventListener('change', onChange);
+    });
+
+    pane.querySelectorAll('[data-add]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var group = btn.getAttribute('data-add');
+        state[group].push(blankPost());
+        renderEditor();
+        renderPreview();
+      });
+    });
+
+    pane.querySelectorAll('[data-remove]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var group = btn.getAttribute('data-remove');
+        var idx = Number(btn.getAttribute('data-remove-idx'));
+        state[group].splice(idx, 1);
+        renderEditor();
+        renderPreview();
+      });
+    });
+  }
+
+  document.getElementById('downloadBtn').addEventListener('click', function(){
+    var el = document.getElementById('pdfPreview');
+    var fileName = (state.destination || '여행가이드') + '_' + (state.customerName || '고객') + '.pdf';
+    fileName = fileName.replace(/[\\/:*?"<>|]/g, '');
+    var opt = {
+      margin: 8,
+      filename: fileName,
+      image: { type:'jpeg', quality:0.98 },
+      html2canvas: { scale:3, useCORS:true },
+      jsPDF: { unit:'mm', format:'a4', orientation:'portrait' },
+      pagebreak: { mode:['css','avoid-all','legacy'] }
+    };
+    // 웹폰트가 완전히 로드된 후에 캡처해야 표/제목 위치가 어긋나지 않음
+    var ready = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+    ready.then(function(){
+      if(window.html2pdf){
+        window.html2pdf().set(opt).from(el).save();
+      } else {
+        window.print();
+      }
+    });
+  });
+
+  renderEditor();
+  renderPreview();
+})();
+</script>
+
+</body>
+</html>
