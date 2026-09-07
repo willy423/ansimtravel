@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>해외여행 안심 정보 검색 | 안심여행정보</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#12233f;
+    --navy-2:#1c3660;
+    --ink:#1b2430;
+    --sub:#4b5768;
+    --line:#e4e8ef;
+    --bg:#f4f6fa;
+    --card:#ffffff;
+    --accent:#c8912b;
+    --accent-2:#e7a83a;
+    --accent-soft:#fbf1de;
+    --danger:#b5372c;
+    --danger-soft:#fbe9e7;
+    --ok:#1c6e4a;
+    --ok-soft:#e7f4ee;
+    --radius:16px;
+    --shadow:0 10px 30px rgba(18,35,63,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    font-size:17px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:28px 18px 80px;}
+
+  header.top{
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);
+    color:#fff;
+    padding:38px 22px 34px;
+    border-radius:0 0 28px 28px;
+    text-align:center;
+  }
+  header.top .eyebrow{
+    display:inline-block;
+    font-size:13px;
+    letter-spacing:.12em;
+    color:var(--accent-2);
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  header.top h1{
+    margin:0 0 10px;
+    font-size:clamp(24px,5vw,32px);
+    font-weight:900;
+    line-height:1.35;
+  }
+  header.top p{
+    margin:0;
+    font-size:15.5px;
+    color:#c9d4e6;
+    font-weight:500;
+  }
+
+  .search-panel{
+    max-width:760px;
+    margin:-30px auto 0;
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:22px;
+    position:relative;
+    z-index:5;
+  }
+  .search-box{position:relative;}
+  .search-box input{
+    width:100%;
+    font-size:18px;
+    font-weight:500;
+    padding:16px 48px 16px 18px;
+    border-radius:12px;
+    border:2px solid var(--line);
+    outline:none;
+    font-family:inherit;
+    color:var(--ink);
+    background:#fbfbfd;
+  }
+  .search-box input:focus{border-color:var(--accent);background:#fff;}
+  .search-box .icon{
+    position:absolute;right:16px;top:50%;transform:translateY(-50%);
+    font-size:20px;pointer-events:none;color:var(--sub);
+  }
+  .suggest{
+    position:absolute;left:0;right:0;top:calc(100% + 6px);
+    background:#fff;border:1px solid var(--line);border-radius:12px;
+    box-shadow:var(--shadow);
+    max-height:320px;overflow-y:auto;
+    display:none;
+    z-index:20;
+  }
+  .suggest.show{display:block;}
+  .suggest button{
+    display:flex;align-items:center;gap:10px;
+    width:100%;text-align:left;background:none;border:0;
+    padding:13px 16px;font-size:16px;font-family:inherit;color:var(--ink);
+    cursor:pointer;border-bottom:1px solid var(--line);
+  }
+  .suggest button:last-child{border-bottom:0;}
+  .suggest button:hover, .suggest button.active{background:var(--accent-soft);}
+  .suggest .flag{font-size:20px;}
+  .suggest .country{color:var(--sub);font-size:13.5px;margin-left:auto;font-weight:500;}
+
+  .quick-row{
+    display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;
+  }
+  .quick-row button{
+    font-family:inherit;font-size:13.5px;font-weight:600;
+    background:var(--bg);border:1px solid var(--line);color:var(--sub);
+    padding:8px 13px;border-radius:999px;cursor:pointer;
+  }
+  .quick-row button:hover{border-color:var(--accent);color:var(--accent);}
+
+  .filter-row{
+    margin-top:18px;padding-top:18px;border-top:1px solid var(--line);
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .filter-row label{font-size:14px;font-weight:700;color:var(--sub);white-space:nowrap;}
+  .filter-row select{
+    flex:1;min-width:180px;
+    font-family:inherit;font-size:15.5px;font-weight:500;color:var(--ink);
+    padding:11px 14px;border-radius:10px;border:1.5px solid var(--line);
+    background:#fbfbfd;
+  }
+
+  #result{max-width:760px;margin:26px auto 0;}
+  .empty-state{
+    text-align:center;color:var(--sub);padding:60px 20px;font-size:15.5px;
+  }
+  .empty-state .big{font-size:44px;margin-bottom:10px;display:block;}
+
+  .country-head{
+    display:flex;align-items:center;gap:14px;
+    background:var(--card);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:20px 22px;margin-bottom:16px;
+  }
+  .country-head .flag{font-size:38px;}
+  .country-head h2{margin:0;font-size:23px;font-weight:900;color:var(--navy);}
+  .country-head .cur{margin-top:3px;font-size:13.5px;color:var(--sub);font-weight:600;}
+
+  .cat-card{
+    background:var(--card);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:22px 22px 20px;margin-bottom:14px;
+  }
+  .cat-card h3{
+    margin:0 0 14px;font-size:17.5px;font-weight:800;color:var(--navy);
+    display:flex;align-items:center;gap:9px;
+  }
+  .cat-card h3 .num{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:8px;background:var(--accent-soft);
+    color:var(--accent);font-size:13px;font-weight:900;flex:none;
+  }
+  .cat-card ul{margin:0;padding-left:20px;}
+  .cat-card li{margin-bottom:9px;font-size:15.8px;color:var(--ink);}
+  .cat-card li:last-child{margin-bottom:0;}
+  .cat-card li.warn{
+    list-style:none;margin-left:-20px;
+    background:var(--danger-soft);color:#7a281f;border-radius:10px;
+    padding:12px 14px;font-weight:600;
+  }
+
+  .em-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px;}
+  .em-item{
+    background:var(--bg);border-radius:12px;padding:14px 12px;text-align:center;
+  }
+  .em-item .lbl{font-size:12.5px;color:var(--sub);font-weight:700;margin-bottom:5px;}
+  .em-item .num{font-size:21px;font-weight:900;color:var(--danger);}
+  .cc-box{
+    background:var(--ok-soft);border-radius:12px;padding:14px 16px;margin-bottom:12px;
+    font-size:15px;color:#164a34;font-weight:600;
+  }
+  .cc-box b{color:var(--ok);}
+  .consulate-box{
+    background:var(--bg);border-radius:12px;padding:14px 16px;
+    font-size:14.8px;color:var(--sub);line-height:1.6;
+  }
+
+  footer{
+    max-width:760px;margin:34px auto 0;text-align:center;
+    color:var(--sub);font-size:13px;line-height:1.8;padding:0 10px;
+  }
+  footer .brand{font-weight:800;color:var(--navy);font-size:14.5px;margin-bottom:6px;}
+  .disclaimer{
+    max-width:760px;margin:20px auto 0;background:#fff;border:1px solid var(--line);
+    border-radius:12px;padding:16px 18px;font-size:13px;color:var(--sub);line-height:1.75;
+  }
+  .disclaimer b{color:var(--ink);}
+
+  @media (max-width:480px){
+    body{font-size:16px;}
+    .wrap{padding:18px 12px 60px;}
+    header.top{padding:30px 16px 28px;border-radius:0 0 22px 22px;}
+    .search-panel{margin-top:-22px;padding:16px;}
+    .cat-card{padding:18px 16px 16px;}
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <span class="eyebrow">안심여행정보</span>
+  <h1>해외여행 안심 정보 검색</h1>
+  <p>여행지를 검색하면 안전수칙부터 응급연락처, 사기 예방법까지 한눈에 확인할 수 있어요</p>
+</header>
+
+<div class="wrap">
+  <div class="search-panel">
+    <div class="search-box">
+      <input id="searchInput" type="text" placeholder="여행지를 입력하세요 (예: 다낭, 방콕, 로마)" autocomplete="off">
+      <span class="icon">🔍</span>
+      <div id="suggest" class="suggest"></div>
+    </div>
+    <div class="quick-row" id="quickRow"></div>
+    <div class="filter-row">
+      <label for="catSelect">궁금한 항목</label>
+      <select id="catSelect"></select>
+    </div>
+  </div>
+
+  <div id="result">
+    <div class="empty-state">
+      <span class="big">🧭</span>
+      위에서 여행지를 검색하면<br>해당 국가의 안심 정보가 여기에 나와요
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <b>안내:</b> 본 정보는 외교부 해외안전여행(0404.go.kr) 등 공개 자료를 참고해 정리했으며, 응급전화번호·영사관 연락처·여행경보 단계 등은 수시로 변경될 수 있습니다. 출국 전 반드시 0404.go.kr에서 최신 정보를 한 번 더 확인하시길 권해 드립니다.
+  </div>
+
+  <footer>
+    <div class="brand">안심여행정보</div>
+    안전한 해외여행을 위한 정보를 담았습니다.
+  </footer>
+</div>
+
+<script>
+const DATA = {"jp": {"name": "일본", "flag": "🇯🇵", "cities": ["일본", "도쿄", "오사카", "후쿠오카", "삿포로", "오키나와", "교토", "나고야", "벳부", "나가사키", "요코하마", "도쿄여행", "오사카여행"], "currency": "엔(JPY)", "cats": {"safety": ["전반적으로 세계 최상위권 치안이지만, 신주쿠 가부키초·오사카 도톤보리 유흥가의 심야 호객은 주의하세요.", "지진·태풍 등 자연재해가 잦은 나라예요. 숙소 비상구 위치를 미리 확인하고, 기상청 재해 알림 앱을 설치해두면 안심돼요.", "음주 후 밤늦게 혼자 유흥가 뒷골목으로 이동하는 건 피하는 게 좋아요.", "러시아워 만원 전철에서는 소매치기보다 소지품 분실 사례가 많으니 가방을 앞으로 메세요."], "emergency": {"police": "110", "ambulance": "119", "fire": "119", "extra": "해상 사고 118 · 관광안내 다국어 전화상담센터 050-3816-2787(24시간, 한국어 가능)", "consulate": "주일본 대한민국 대사관(도쿄) · 오사카·후쿠오카 총영사관 · 나고야/삿포로/요코하마 출장소 등, 지역별로 관할이 다르니 정확한 연락처는 출국 전 0404.go.kr에서 재확인하세요."}, "insurance": ["일본 병원은 원칙적으로 진료 후 현장에서 현금·카드로 바로 결제해야 해요. 건강보험이 없는 외국인은 전액 본인부담이라 금액이 꽤 클 수 있어요.", "여행자보험 가입 시 '해외 병원 캐시리스(직접지불)' 제휴 병원 여부를 확인해두면 목돈을 미리 내지 않아도 돼요.", "진료 후 받은 영수증·진단서·처방전 원본은 반드시 챙겨두세요. 귀국 후 보험금 청구 시 꼭 필요해요.", "구급차 이용 자체는 무료지만, 이후 진료비는 별도로 청구돼요."], "forex": ["카드 결제 시 'DCC(자국통화=원화 결제)'를 권유받으면 반드시 '엔화 결제'를 선택하세요. 원화로 결제하면 이중 환전 수수료가 붙어 3~10% 더 비싸질 수 있어요.", "편의점 ATM(세븐뱅크 등)은 해외카드 인출 수수료가 상대적으로 낮은 편이에요.", "100엔숍이나 재래시장 등 소액 결제 위주 상점은 카드가 안 되는 곳도 많아 약간의 현금은 꼭 챙기세요."], "customs": ["감기약 등에 에페드린·코데인 성분이 들어있으면 반입 제한 대상이에요. 1개월분을 넘으면 '약감증명서'가 필요해요.", "라면 수프처럼 육류 성분이 든 가공식품은 반입 금지되는 경우가 있으니 인스턴트 식품은 주의하세요.", "전자담배 액상 니코틴은 반입 자체가 금지예요."], "transport": ["택시는 미터제라 바가지 위험이 적지만, 심야(대략 22시~5시)엔 20~30% 할증이 붙어요.", "신주쿠·시부야 인근에서 다가오는 '흰색 무허가 택시' 호객은 정찰제가 아닐 수 있으니 정식 택시 승강장을 이용하세요.", "스이카·파스모 같은 교통카드를 미리 구매해두면 훨씬 편해요."], "scams": ["가부키초·도톤보리 유흥가에서 '싸게 해준다'며 다가오는 호객꾼을 따라가면 수십만 원대 술값 바가지를 쓰는 사례가 반복돼요.", "'무료 안내'를 자처하며 접근한 뒤 고가 상품 구매를 유도하는 경우가 있어요.", "관광지에서 즉석 인력거·사진 촬영 후 예상보다 훨씬 높은 금액을 청구하기도 해요."], "checklist": ["여권 잔여 유효기간 6개월 이상 확인 (일본은 무비자지만 여유 있게 준비하세요)", "렌터카 이용 예정이면 국제운전면허증 발급", "지진 대비 재해 알림 앱 설치", "엔화 소액 환전 + 트래블카드 준비"], "response": ["위급 상황이면 즉시 110(경찰)/119(구급·화재)로 신고하세요.", "한국어 통역이 필요하면 외교부 영사콜센터(해외에서 +82-2-3210-0404, 카카오톡 채널 '외교부 영사콜센터')로 연결하면 도와줘요.", "여권 분실·사건사고는 관할 대사관·총영사관에 바로 연락하세요.", "여행자보험에 가입했다면 보험사 24시간 긴급상담 번호로도 함께 연락하세요."], "payment": ["신용카드·트래블카드가 대부분 통용되지만, 소규모 식당이나 재래시장은 현금만 받는 곳도 있어요.", "팁 문화가 없어요. 팁을 놓고 나오면 오히려 직원이 쫓아와 돌려주기도 해요.", "환전은 한국 공항보다 일본 현지 공식 환전소가 유리한 경우가 많아요."]}}, "vn": {"name": "베트남", "flag": "🇻🇳", "cities": ["베트남", "다낭", "나트랑", "하노이", "호치민", "푸꾸옥", "호이안", "붕따우", "달랏", "베트남여행", "다낭여행"], "currency": "동(VND)", "cats": {"safety": ["전반적으로 여행하기 안전한 편이지만, 관광지 밀집 구역에서는 소매치기·날치기에 주의하세요.", "오토바이가 매우 많아 도로 횡단 시 사고 위험이 커요. 천천히 일정한 속도로 걸어서 건너세요.", "야시장·해변 등 인파가 몰리는 곳에서는 가방을 앞으로 메고 지퍼를 잠그세요."], "emergency": {"police": "113", "ambulance": "115", "fire": "114", "extra": "", "consulate": "주베트남 대한민국 대사관(하노이) +84-24-3771-0404 · 주호치민 총영사관 +84-28-3824-2593(비자 +84-28-3824-3311) · 주다낭 총영사관 +84-23-6356-6100~4 (근무시간 외 긴급상황은 영사콜센터 이용)"}, "insurance": ["빈멕(Vinmec)·FV병원 등 외국인 진료가 가능한 사립병원이 있지만 비용이 꽤 비싸고, 대부분 진료 전 선결제를 요구해요.", "여행자보험의 '캐시리스 제휴 병원' 목록을 미리 확인해두면 목돈 없이 진료받을 수 있어요.", "영수증·진단서는 전부 사진으로도 남겨두면 분실을 대비할 수 있어요."], "forex": ["환전소마다 환율 차이가 8~10%까지 나기도 해요. 은행·공식 환전소(골드샵) 표시환율을 확인하고 환전하세요.", "카드 결제 시 DCC(원화 결제) 권유는 거절하고 '동(VND)'으로 결제하세요.", "길거리 환전상이 건네는 '특별 환율'은 대부분 사기이니 응하지 마세요."], "customs": ["육류·과일·씨앗류는 반입이 제한돼요.", "문화재·골동품으로 보이는 물품은 반출이 금지될 수 있어요.", "처방약은 소량(여행 기간분)만 원래 용기에 담아 지참하세요."], "transport": ["Grab 앱으로 택시·오토바이 택시를 부르면 요금이 정찰제로 표시돼 바가지를 피할 수 있어요.", "길에서 잡는 택시는 마이린(Mai Linh)·비나선(Vinasun) 등 정식 브랜드만 이용하세요.", "오토바이 택시(쎄옴)를 직접 잡을 땐 반드시 탑승 전 요금을 흥정하세요."], "scams": ["택시 미터기를 '고속 모드'로 조작해 실제보다 훨씬 높은 요금을 청구하는 사례가 대표적이에요.", "가격표 없는 식당에서 주문 후 계산 시 터무니없는 금액을 부르기도 해요.", "저가 투어 상품에 숨겨진 추가요금을 붙이거나 일정이 바뀌는 경우가 있어요.", "'특가'라며 파는 가짜 보석·명품은 실제 가치보다 훨씬 비싸요.", "친한 척 접근해 불법 물질을 권하거나 이를 빌미로 경찰을 사칭해 협박하는 경우도 있으니 낯선 사람이 주는 것은 받지 마세요."], "checklist": ["전자비자(e-Visa) 사전 발급", "왕복 항공권 준비 (입국 심사 시 요구되는 경우 있음)", "Grab 앱 미리 설치", "동(VND) 소액권 위주로 환전"], "response": ["위급 상황이면 113(경찰)/115(구급)로 바로 신고하세요.", "가까운 대사관·총영사관에 연락하거나, 근무시간 외에는 외교부 영사콜센터로 연결하세요.", "택시 바가지·사기 피해는 가능하면 현장에서 영수증·사진을 남겨두면 나중에 도움이 돼요."], "payment": ["카드보다 현금(동) 위주로 통용되는 곳이 많아요. 소액권을 넉넉히 준비하세요.", "ATM 인출 시 수수료가 발생하니 은행별 수수료를 비교해보세요.", "관광지 대형 매장·호텔은 카드 결제가 대부분 가능해요."]}}, "th": {"name": "태국", "flag": "🇹🇭", "cities": ["태국", "방콕", "파타야", "푸켓", "치앙마이", "끄라비", "코사무이", "태국여행", "방콕여행", "파타야여행"], "currency": "바트(THB)", "cats": {"safety": ["전반적으로 안전하지만 방콕 왕궁·왓포 등 유명 관광지 주변에서 접근하는 낯선 사람은 경계하세요.", "파타야 등 유흥가 심야 골목은 혼자 다니지 않는 게 좋아요.", "쏭크란(물 축제) 등 인파가 몰리는 시기엔 소매치기가 늘어나니 소지품에 신경 쓰세요."], "emergency": {"police": "191", "ambulance": "1669", "fire": "199", "extra": "관광경찰(영어 가능) 1155", "consulate": "주태국 대한민국 대사관(방콕). 정확한 연락처는 출국 전 0404.go.kr에서 재확인하세요."}, "insurance": ["범룽랏(Bumrungrad) 등 사립병원은 시설이 좋지만 비용이 비싼 편이라 여행자보험 캐시리스 제휴 여부를 꼭 확인하세요.", "공립병원은 저렴하지만 영어 소통이 어려울 수 있어요.", "진료 영수증·진단서는 원본으로 챙겨두세요."], "forex": ["환전소별 환율 차이가 크니 여러 곳을 비교하거나 슈퍼리치(SuperRich) 같은 공식 환전소를 이용하세요.", "카드 결제 시 DCC(원화 결제)는 거절하고 '바트(THB)'로 결제하세요."], "customs": ["전자담배는 소지·반입 자체가 전면 금지예요(압수·벌금 대상).", "주류 반입은 1리터로 제한돼요.", "불상 등 종교적 상징물의 무분별한 반출은 제한될 수 있어요."], "transport": ["미터기 택시가 미터를 켜지 않으려 하면 그냥 하차하고 다른 택시를 이용하세요.", "그랩(Grab) 앱을 이용하면 정찰 요금이라 안심할 수 있어요.", "뚝뚝은 반드시 탑승 전 목적지와 요금을 흥정하세요."], "scams": ["뚝뚝 기사가 '오늘만 특가'라며 보석상점으로 유인하는 '보석 사기'가 대표적이에요. 절대 따라가지 마세요.", "관광지 매표소 앞에서 '오늘은 휴무'라고 속인 뒤 사설 투어로 유인하는 수법도 흔해요.", "파타야 등 유흥가 가라오케·마사지숍에서 처음 안내받은 금액과 다른 고액을 청구하는 사례가 많아요.", "영수증에 서비스차지(SC)가 이미 포함됐는지 확인하고, 포함돼 있다면 추가 팁은 필요 없어요."], "checklist": ["태국 입국신고서(TDAC) 온라인 사전 작성", "체류 90일 초과 시 TM47 신고 필요 여부 확인", "그랩 앱 설치", "바트 소액권 환전"], "response": ["위급 상황이면 191(경찰)/1669(구급)로 신고하세요. 영어가 편하면 관광경찰 1155도 가능해요.", "사기·바가지 피해는 관광경찰에 신고하면 통역과 중재를 도와줘요.", "대사관 업무시간 외 긴급 상황은 영사콜센터로 연결하세요."], "payment": ["관광지 대형 매장은 카드 결제가 대부분 가능하지만, 재래시장·뚝뚝은 현금이 필수예요.", "소액권을 넉넉히 준비하면 거스름돈 시비를 줄일 수 있어요."]}}, "ph": {"name": "필리핀", "flag": "🇵🇭", "cities": ["필리핀", "세부", "보라카이", "마닐라", "보홀", "팔라완", "클락", "필리핀여행", "세부여행", "보라카이여행"], "currency": "페소(PHP)", "cats": {"safety": ["마닐라 등 대도시는 밤늦게 혼자 다니는 걸 피하고, 소매치기·날치기에 주의하세요.", "휴양지(세부·보라카이)는 상대적으로 안전하지만 관광객 대상 바가지·사기는 흔한 편이에요.", "태풍 시즌(6~11월)엔 일정 변경 가능성을 염두에 두세요."], "emergency": {"police": "911(통합 긴급신고)", "ambulance": "911", "fire": "911", "extra": "관할 지역별 관광경찰 별도 운영", "consulate": "주필리핀 대한민국 대사관(마닐라), 세부에 출장소가 있어요. 정확한 연락처는 출국 전 0404.go.kr에서 재확인하세요."}, "insurance": ["사립병원 위주로 이용하게 되며 대부분 진료 전 선결제를 요구해요.", "여행자보험 캐시리스 제휴병원을 미리 확인해두세요.", "영수증·진단서는 반드시 챙기세요."], "forex": ["온라인에서 저렴한 여행상품·투어를 예약할 때 사기 피해가 종종 보고돼요. 검증된 플랫폼을 이용하세요.", "카드 결제 시 DCC(원화 결제)는 거절하고 '페소(PHP)'로 결제하세요."], "customs": ["과일·육류 반입이 제한돼요.", "총기 모형·칼 종류 등은 수하물 반입이 제한될 수 있어요."], "transport": ["트라이시클(삼륜차)은 탑승 전 목적지와 요금을 확인하세요. 레귤러(합승, 저렴)와 스페셜(단독, 비쌈)을 구분해요.", "그랩(Grab) 앱을 이용하면 정찰 요금이라 안심이에요.", "지프니는 저렴하지만 노선 파악이 어려우니 초행길엔 그랩을 추천해요."], "scams": ["호핑투어·선셋 세일링 등에서 시세보다 터무니없이 싼 가격을 부르면 안전장비 부실이나 환불 거부로 이어질 수 있어요.", "트라이시클 기사가 큰 지폐의 거스름돈을 안 주는 경우가 잦으니 소액권을 준비하세요.", "마사지숍·식당에서 영수증에 서비스차지(SC)가 포함됐는지 확인 없이 추가 팁을 요구하기도 해요."], "checklist": ["왕복 항공권 지참 (입국 심사 시 요구)", "입국카드 작성", "그랩 앱 설치", "페소 소액권(50·100페소) 준비"], "response": ["위급 상황이면 911로 신고하세요.", "여행상품 사기 등은 현지 관광부 콜센터나 대사관에 문의할 수 있어요.", "긴급 상황이면 영사콜센터로 연결해 통역·안내를 받으세요."], "payment": ["페소 현금 위주 사회지만 호텔·대형 쇼핑몰은 카드 결제가 가능해요.", "카드 결제 시 수수료가 붙는 가맹점도 있으니 확인하세요."]}}, "tw": {"name": "대만", "flag": "🇹🇼", "cities": ["대만", "타이베이", "타이중", "가오슝", "화롄", "지우펀", "타이베이여행", "대만여행"], "currency": "대만달러(TWD)", "cats": {"safety": ["치안이 매우 좋은 편으로 여행자 사기 사례가 적은 나라예요.", "지진이 잦은 지역이니 숙소 비상구를 미리 확인해두세요.", "야시장 등 인파 밀집 지역에서는 기본적인 소지품 관리만 신경 쓰면 충분해요."], "emergency": {"police": "110", "ambulance": "119", "fire": "119", "extra": "", "consulate": "주타이베이 대한민국 대표부(대만은 미수교국이라 '대표부' 명칭 사용). 정확한 연락처는 출국 전 0404.go.kr에서 재확인하세요."}, "insurance": ["응급실 이용은 가능하지만 외국인은 진료 전·후 선결제를 요구받는 경우가 많아요.", "대형 종합병원 국제진료센터를 이용하면 영어·중국어 응대가 원활해요.", "영수증·진단서는 꼭 챙겨두세요."], "forex": ["카드 결제 시 DCC(원화 결제)는 거절하고 '대만달러(TWD)'로 결제하세요.", "은행·공항 환전소 환율이 비교적 투명한 편이에요."], "customs": ["육가공품(햄, 소시지 등) 반입은 엄격히 금지되며 적발 시 최대 약 800만 원 상당의 벌금이 부과될 수 있어요. 기내식으로 받은 육류 반찬도 절대 반입하지 마세요.", "과일류도 반입이 제한돼요."], "transport": ["MRT(지하철)·버스가 매우 발달해 있고 요금도 저렴해요. 이지카드(悠遊卡)를 구매하면 편리해요.", "택시 미터기 신뢰도가 높아 바가지 사례가 드문 편이에요."], "scams": ["여행자를 노린 사기 사례가 적은 편이지만, 야시장에서 무게를 속이는 경우가 드물게 보고돼요.", "택시·상점 모두 정찰제 문화가 정착돼 있어 비교적 안심할 수 있어요."], "checklist": ["90일 무비자 입국 가능 (여권 유효기간 확인)", "입국신고서는 선택사항인 경우가 많음 (온라인 입국카드 권장)", "이지카드 구매", "대만달러 소액 환전"], "response": ["위급 상황이면 110(경찰)/119(구급·화재)로 신고하세요.", "여권 분실 등은 주타이베이 대표부에 연락하거나 영사콜센터로 연결하세요."], "payment": ["카드·전자결제(라인페이 등) 사용률이 높아지고 있지만 전통시장·야시장은 현금이 여전히 편해요."]}}, "hkmo": {"name": "홍콩·마카오", "flag": "🇭🇰", "cities": ["홍콩", "마카오", "홍콩마카오", "홍콩여행", "마카오여행"], "currency": "홍콩달러(HKD) / 마카오달러(MOP)", "cats": {"safety": ["전반적으로 치안이 매우 좋은 지역이에요.", "홍콩 침사추이·몽콕 등 번화가는 인파가 많아 소매치기에 유의하세요.", "마카오는 카지노 밀집 지역이라 심야 유흥가 골목은 혼자 다니지 않는 게 좋아요."], "emergency": {"police": "999(홍콩·마카오 공통)", "ambulance": "999", "fire": "999", "extra": "", "consulate": "주홍콩 대한민국 총영사관이 마카오 지역도 함께 관할해요. 정확한 연락처는 출국 전 0404.go.kr에서 재확인하세요."}, "insurance": ["사립병원은 진료 전 선결제를 요구하는 경우가 많아요. 여행자보험 캐시리스 제휴 여부를 확인하세요.", "공립병원은 대기 시간이 긴 편이라 급하지 않으면 사립병원을 이용하는 게 편해요."], "forex": ["카드 결제 시 DCC(원화 결제)는 거절하고 현지통화로 결제하세요.", "마카오 카지노 주변 사설 환전상은 환율이 불리하거나 위폐 위험이 있으니 은행·공식 환전소를 이용하세요."], "customs": ["홍콩은 비교적 반입 규제가 적은 편이에요.", "마카오 카지노 내부는 촬영이 제한되는 구역이 있으니 안내를 따르세요."], "transport": ["옥토퍼스카드(홍콩)·마카오패스를 구매하면 대중교통 이용이 훨씬 편해요.", "택시는 미터기를 기본으로 사용하지만, 국경 넘는 장거리 구간은 사전에 요금을 확인하세요."], "scams": ["홍콩 침사추이 인근에서 '무료 관광 가이드'를 자처하며 접근한 뒤 고가 찻집(티하우스)으로 유인하는 바가지 수법이 있어요.", "명품 시계·전자기기의 '초특가' 판매는 대부분 모조품이니 주의하세요.", "마카오 환전상의 파격적인 환율 제안은 사기이거나 위폐일 가능성이 있어요."], "checklist": ["무비자 입국 가능 (여권 유효기간 확인)", "마카오는 별도 입경카드 작성", "옥토퍼스카드/마카오패스 준비", "홍콩달러·마카오달러 각각 소액 환전 (통화가 달라요)"], "response": ["위급 상황이면 999로 신고하세요.", "여권 분실·사건사고는 주홍콩 총영사관에 연락하거나 영사콜센터로 연결하세요."], "payment": ["카드·전자결제(옥토퍼스, 알리페이HK 등)가 매우 보편적이에요.", "홍콩달러와 마카오달러는 별도 통화지만 마카오에서는 홍콩달러도 대부분 통용돼요."]}}, "cn": {"name": "중국", "flag": "🇨🇳", "cities": ["중국", "베이징", "상하이", "광저우", "칭다오", "시안", "하얼빈", "청두", "장자제", "중국여행", "상하이여행"], "currency": "위안(CNY)", "cats": {"safety": ["2023년 7월 시행된 반간첩법으로 국가안보와 관련된 촬영·발언에 각별히 주의해야 해요. 톈안먼 사건, 티베트·신장 독립, 대만 분리 주장 같은 정치적으로 민감한 발언은 처벌 대상이 될 수 있어요.", "철도역·군사시설·정부기관 등에서는 촬영이 제한돼요. 촬영 가능 여부가 불분명하면 미리 확인하세요.", "2024년 7월부터 국가안보기관이 휴대폰·노트북 등 전자기기를 검사할 수 있게 됐어요.", "국가정보법상 인터넷 사용기록이 조사 대상이 될 수 있다는 점도 참고하세요."], "emergency": {"police": "110", "ambulance": "120", "fire": "119", "extra": "", "consulate": "주중국 대한민국 대사관(베이징) · 상하이·광저우·칭다오·시안·선양·홍콩 등 총영사관이 지역별로 있어요. 정확한 연락처는 출국 전 0404.go.kr에서 재확인하세요."}, "insurance": ["해외 서비스(구글 등) 접속이 차단돼 있어 여행자보험사의 앱·웹이 열리지 않을 수 있으니, 출국 전 보험사 긴급연락처(국제전화 가능 여부)를 별도로 메모해두세요.", "병원은 대부분 선결제가 필요해요.", "영수증·진단서(중국어)는 번역 공증이 필요할 수 있어 원본을 잘 보관하세요."], "forex": ["현금 통용도가 매우 낮아 사실상 모바일페이(알리페이·위챗페이)가 필수예요. 여권으로 외국인 결제 등록을 출국 전 앱에서 미리 해두면 편해요.", "신용카드 사용처는 대도시 호텔·백화점 등으로 제한적이에요.", "카드 결제 시 DCC(원화 결제)는 거절하고 위안화로 결제하세요."], "customs": ["서적·출판물은 검열 대상이 될 수 있어요.", "드론은 반입 시 사전 신고가 필요할 수 있어요.", "GPS 기기 등 일부 전자기기 반입이 제한될 수 있으니 사전 확인이 필요해요."], "transport": ["디디추싱(중국판 차량호출 앱) 이용이 사실상 필수예요. 다만 외국인 결제수단 연동이 까다로울 수 있어요.", "고속철도·지하철 탑승 전 공항 수준의 보안검색이 있으니 여유 있게 이동하세요.", "여권 원본을 소지하고 다니는 걸 권장해요."], "scams": ["관광지 인근에서 '차 문화 체험'을 유도한 뒤 고가의 차를 강매하는 '차 사기'가 대표적이에요.", "택시보다는 공항·역 인근 무허가 호객 차량을 조심하세요.", "가짜 골동품·모조품을 진품이라 속여 파는 경우가 많아요."], "checklist": ["비자 필요 여부 확인 (일부 도시는 무비자 경유·단기체류 가능)", "알리페이·위챗페이 외국인 결제(여권 연동) 사전 설정", "VPN 없이는 카카오톡·구글 등 접속이 어려우니 가족과의 연락 수단 미리 안내", "위안화 소액 환전"], "response": ["위급 상황이면 110(경찰)/120(구급)으로 신고하세요.", "여권 분실·사건사고는 관할 대사관·총영사관에 연락하거나 영사콜센터로 연결하세요.", "정치적으로 민감한 사안에 연루됐다면 즉시 대사관에 도움을 요청하세요."], "payment": ["모바일페이(알리페이·위챗페이)가 사실상 표준 결제수단이에요.", "현금은 잔돈이 없다며 거부당하는 경우도 있어요."]}}, "sg": {"name": "싱가포르", "flag": "🇸🇬", "cities": ["싱가포르", "싱가포르여행"], "currency": "싱가포르달러(SGD)", "cats": {"safety": ["세계 최상위권 치안을 자랑하지만, 법 집행이 매우 엄격한 나라예요.", "껌 반입·판매, 무단횡단, 지정구역 외 흡연 등은 벌금 대상이니 사소한 규칙도 잘 지키세요.", "마약류는 소량 소지만으로도 사형까지 가능한 매우 엄격한 처벌 대상이에요."], "emergency": {"police": "999", "ambulance": "995", "fire": "995", "extra": "", "consulate": "주싱가포르 대한민국 대사관. 정확한 연락처는 출국 전 0404.go.kr에서 재확인하세요."}, "insurance": ["병원비가 매우 비싼 나라라 여행자보험이 사실상 필수예요.", "사립병원은 캐시리스 제휴 여부를 미리 확인해두면 좋아요."], "forex": ["카드 결제 시 DCC(원화 결제)는 거절하고 '싱가포르달러(SGD)'로 결제하세요.", "환전 사기 사례는 드문 편이지만, 은행·공식 환전소를 이용하는 게 안전해요."], "customs": ["껌 반입은 원칙적으로 금지예요(치료용 등 극히 일부 예외).", "전자담배는 소지만으로도 처벌 대상이 될 수 있어요.", "마약류 반입·소지는 매우 중대한 범죄로 취급돼요."], "transport": ["MRT(지하철) 등 대중교통이 매우 발달해 있고 바가지 사례가 거의 없어요.", "그랩(Grab) 앱도 널리 쓰여요."], "scams": ["관광객을 노린 대형 사기는 드문 편이지만, 온라인 중고거래·투자 사기는 발생하니 낯선 제안은 주의하세요."], "checklist": ["무비자 입국 가능 (여권 유효기간 확인)", "SG Arrival Card 온라인 사전 작성 필수", "껌·전자담배는 짐에서 미리 빼두기", "싱가포르달러 소액 환전"], "response": ["위급 상황이면 999(경찰)/995(구급·화재)로 신고하세요.", "여권 분실 등은 대사관에 연락하거나 영사콜센터로 연결하세요."], "payment": ["카드·전자결제가 매우 보편적이에요.", "팁 문화는 없어요. 대부분 영수증에 서비스차지가 포함돼 있어요."]}}, "kh": {"name": "캄보디아", "flag": "🇰🇭", "cities": ["캄보디아", "씨엠립", "앙코르와트", "프놈펜", "캄보디아여행", "씨엠립여행"], "currency": "미국달러(USD, 사실상 통용) / 리엘(KHR)", "cats": {"safety": ["[꼭 확인하세요] 2025년 10월 16일부터 캄폿주 보코산 지역, 바벳시, 포이펫시는 외교부 여행경보 4단계(여행금지)가 발령됐어요. 온라인 스캠 조직의 취업사기로 유인된 뒤 감금·강제노동을 당하는 피해가 급증한 지역이라 절대 방문하면 안 돼요.", "시아누크빌주는 3단계(출국권고), 프놈펜시 등 8곳은 특별여행주의보가 유지되고 있어요. 여행경보 단계는 수시로 바뀌니 출국 직전 반드시 0404.go.kr에서 최신 정보를 확인하세요.", "SNS나 지인을 통해 '캄보디아 고수익 알바·취업'을 제안받으면 절대 응하지 마세요. 인신매매성 스캠 조직 연루 사건이 실제로 다수 발생했어요.", "씨엠립·프놈펜 등 일반 관광지는 상대적으로 안전하지만 야간 이동은 주의하세요."], "emergency": {"police": "117 / 118", "ambulance": "119", "fire": "118", "extra": "", "consulate": "주캄보디아 대한민국 대사관(프놈펜). 정확한 연락처는 출국 전 0404.go.kr에서 재확인하세요."}, "insurance": ["의료시설이 상대적으로 열악해 중증 질환·사고 시 태국이나 싱가포르로 후송해야 할 수 있어요. 해외 후송(medical evacuation) 특약이 포함된 여행자보험을 권해요.", "영수증·진단서는 반드시 챙겨두세요."], "forex": ["미국달러가 사실상 통용되고, 잔돈만 캄보디아 리엘로 받는 구조예요.", "카드 결제 시 DCC(원화 결제)는 거절하세요."], "customs": ["앙코르와트 등 유적지에서 나온 문화재로 보이는 물품은 반출이 금지돼요."], "transport": ["씨엠립·프놈펜에서 툭툭을 탈 땐 반드시 사전에 요금을 협상하세요.", "PassApp·그랩 같은 차량호출 앱을 이용하면 정찰 요금이라 더 안심돼요."], "scams": ["위 여행금지 지역과 관련된 '고수익 알바' 제안이 가장 위험한 사기예요. SNS·메신저로 오는 채용 제안은 절대 응하지 마세요.", "툭툭 기사가 정해진 요금보다 높게 부르거나 목적지를 우회하는 경우가 있어요.", "유적지 인근에서 '가이드'를 자처하며 접근한 뒤 고액을 요구하는 사례가 있어요."], "checklist": ["전자비자(e-Visa) 또는 도착비자 발급", "여행경보 4단계 지역(보코산·바벳·포이펫) 최신 현황 재확인", "미국달러 소액권 준비", "'현지 고수익 알바' 등 SNS 제안 절대 응하지 않기"], "response": ["위급 상황이면 117/118(경찰)로 신고하세요.", "인신매매·감금 등 강력범죄 피해가 의심되면 즉시 대사관 또는 영사콜센터로 연락하세요.", "가족·지인에게도 여행 경로와 숙소를 미리 공유해두면 만약의 상황에 도움이 돼요."], "payment": ["미국달러 현금이 가장 편해요. 카드 결제는 대형 호텔·레스토랑 위주로 가능해요."]}}, "us": {"name": "미국", "flag": "🇺🇸", "cities": ["미국", "뉴욕", "LA", "로스앤젤레스", "라스베가스", "샌프란시스코", "하와이", "호놀룰루", "시애틀", "미국여행", "하와이여행"], "currency": "달러(USD)", "cats": {"safety": ["대도시의 특정 우범지역은 야간 도보 이동을 피하세요. 방문 전 지역 치안 정보를 검색해보는 게 좋아요.", "총기 소지가 합법인 나라라, 강도 등 위협 상황에서는 저항하기보다 순순히 응하고 몸의 안전을 우선하세요.", "렌터카 이용 시 차량 안에 귀중품을 두고 내리지 마세요. 차량털이(break-in)가 관광지 주차장에서 자주 발생해요."], "emergency": {"police": "911", "ambulance": "911", "fire": "911", "extra": "", "consulate": "주미국 대한민국 대사관(워싱턴DC) 외 뉴욕·LA·샌프란시스코·호놀룰루·시애틀 등 주요 도시에 총영사관이 있어요. 정확한 관할·연락처는 출국 전 0404.go.kr에서 재확인하세요."}, "insurance": ["병원비가 세계 최고 수준이에요. 응급실 방문만으로도 수백만 원이 청구될 수 있어 여행자보험은 선택이 아니라 필수예요.", "여행자보험 가입 시 보장한도가 충분한지(최소 1억 원 이상 권장), 캐시리스 제휴 여부를 꼭 확인하세요.", "진료 전 반드시 여행자보험 가입 사실을 병원에 알리고, 모든 영수증·진단서를 챙기세요."], "forex": ["카드 결제가 사실상 표준이에요. DCC(원화 결제) 권유는 거절하고 '달러(USD)'로 결제하세요.", "ATM 인출 시 현지 은행·해외카드 수수료가 이중으로 붙을 수 있어요."], "customs": ["육류·과일·씨앗류는 농무부(USDA) 검사 대상으로 반입이 엄격히 제한돼요.", "처방약은 원래 용기에 담고 영문 처방전을 함께 지참하세요."], "transport": ["대중교통이 낙후된 도시가 많아 우버·리프트 같은 차량호출 앱이나 렌터카를 병행하는 게 편해요.", "렌터카 이용 시 보험 옵션을 꼼꼼히 확인하고, 반납 전후 사진을 남겨두세요."], "scams": ["렌터카 반납 시 없던 흠집을 이유로 추가 비용을 청구하는 사례가 있어요.", "관광지 인근 노점상 '기부금 강요'나 서명 유도 후 소지품을 노리는 경우가 있어요.", "가짜 티켓 판매(콘서트·스포츠 경기 등) 사기도 흔하니 공식 판매처만 이용하세요."], "checklist": ["ESTA(전자여행허가) 사전 신청 필수", "왕복 항공권 지참", "여행자보험 보장한도 충분히 확인", "렌터카 예약 시 보험 옵션 꼼꼼히 확인"], "response": ["위급 상황이면 무조건 911로 신고하세요.", "여권 분실·사건사고는 관할 대사관·총영사관에 연락하거나 영사콜센터로 연결하세요.", "강도 등 위협 상황에서는 저항하지 말고 안전을 최우선으로 하세요."], "payment": ["카드가 사실상 표준 결제수단이에요.", "식당·택시 등에서 팁(15~20%)이 관행적으로 요구돼요. 팁 미포함 문화를 미리 숙지하세요."]}}, "fr": {"name": "프랑스", "flag": "🇫🇷", "cities": ["프랑스", "파리", "니스", "마르세유", "프랑스여행", "파리여행"], "currency": "유로(EUR)", "cats": {"safety": ["파리 에펠탑·몽마르뜨·개선문 등 유명 관광지 주변은 소매치기 밀집 구간이니 특히 주의하세요.", "지하철·기차역·공항에서 한 사람이 말을 걸어 주의를 끄는 사이 다른 사람이 가방을 노리는 조직적 소매치기가 많아요.", "테러 경계로 주요 시설에 군경이 배치돼 있으니 안내에 협조하세요."], "emergency": {"police": "17 (통합 응급 112)", "ambulance": "15", "fire": "18", "extra": "통합 응급전화 112", "consulate": "주프랑스 대한민국 대사관(파리). 정확한 연락처는 출국 전 0404.go.kr에서 재확인하세요."}, "insurance": ["사립병원·클리닉은 진료 전 선결제를 요구하는 경우가 많아요.", "여행자보험 캐시리스 제휴 여부를 미리 확인해두세요.", "영수증·진단서(프랑스어)는 원본으로 보관하세요."], "forex": ["카드(콘택트리스) 결제가 매우 보편적이에요. DCC(원화 결제)는 거절하고 '유로(EUR)'로 결제하세요."], "customs": ["EU 역외에서 육류·유제품 반입이 제한돼요.", "면세 한도를 초과하는 주류·담배는 신고가 필요해요."], "transport": ["지하철·RER 내 소매치기가 잦은 구간(1호선, 관광지 인근 역)에서 특히 소지품에 신경 쓰세요.", "택시는 공식 승강장이나 앱(우버 등)을 이용하는 게 안전해요."], "scams": ["손목에 동의 없이 팔찌를 채우거나 장미꽃을 건넨 뒤 높은 금액을 요구하는 수법이 있어요. 단호히 거절하고 자리를 뜨세요.", "'인권 보호' 등을 내세운 가짜 서명 운동에 응하다 소지품을 도난당하거나 기부를 강요받을 수 있어요.", "역·지하철에서 정식 직원처럼 행세하며 짐을 들어준다며 접근한 뒤 도와준 대가를 요구하거나 짐을 들고 사라지는 경우가 있어요.", "옷에 액체를 몰래 묻힌 뒤 닦아주는 척하며 가방을 훔치는 '오물 사기'도 있어요.", "가짜 경찰을 사칭해 소지품 검사를 빙자한 절도, 과도한 택시요금 청구도 주의하세요."], "checklist": ["셍겐 지역 90일 무비자 (여권 유효기간 6개월 이상 권장)", "소매치기 대비 크로스백·지퍼 가방 준비", "여행자보험 가입", "유로 소액 환전"], "response": ["위급 상황이면 112(통합) 또는 17(경찰)로 신고하세요.", "여권 분실·사건사고는 대사관에 연락하거나 영사콜센터로 연결하세요.", "소매치기 피해 시 현지 경찰서에서 도난신고서(Police Report)를 받아두면 보험 청구에 필요해요."], "payment": ["카드(콘택트리스)가 소액 결제까지 보편적으로 쓰여요."]}}, "it": {"name": "이탈리아", "flag": "🇮🇹", "cities": ["이탈리아", "로마", "밀라노", "베니스", "피렌체", "나폴리", "이탈리아여행", "로마여행"], "currency": "유로(EUR)", "cats": {"safety": ["[꼭 확인하세요] 대사관에서 렌터카 업체 사기 관련 안전공지가 여러 차례 발령됐어요. 불필요한 보험료를 강요하거나, 반납 시 흠집을 조작해 추가 비용을 청구하는 사례가 반복되고 있어요.", "로마 콜로세움·스페인광장, 나폴리 등 관광 밀집 지역은 소매치기·오토바이 날치기에 주의하세요.", "가짜 관광경찰을 사칭해 소지품 검사를 빙자한 사기도 보고돼요."], "emergency": {"police": "112 (통합)", "ambulance": "112", "fire": "112", "extra": "", "consulate": "주이탈리아 대한민국 대사관(로마) · 밀라노 분관. 정확한 연락처는 출국 전 0404.go.kr에서 재확인하세요."}, "insurance": ["사립병원·클리닉은 선결제를 요구하는 경우가 많아 여행자보험 캐시리스 제휴 여부를 확인하세요.", "렌터카 사고 시에는 보험사와 현지 경찰 신고(폴리자)를 동시에 진행해야 해요."], "forex": ["카드 결제가 보편적이에요. DCC(원화 결제)는 거절하고 '유로(EUR)'로 결제하세요."], "customs": ["EU 역외에서 육류·유제품 반입이 제한돼요."], "transport": ["로마·밀라노 지하철은 소매치기가 잦으니 배낭은 앞으로 메세요.", "택시는 정식 승강장이나 공식 앱으로 부르세요."], "scams": ["렌터카 반납 시 없던 흠집이라며 추가 비용을 요구하는 경우가 많아요. 대여·반납 전후로 차량 전체를 사진·영상으로 촬영해두세요.", "관광지 인근 소매치기 2인조가 지도를 보여달라거나 서명을 요구하며 접근해 주의를 분산시켜요.", "나폴리 지역은 오토바이를 탄 채 가방을 낚아채는 날치기 사례가 있으니 도로 안쪽으로 가방을 메세요."], "checklist": ["렌터카는 공식 업체·후기 좋은 업체로 예약", "렌터카 대여·반납 전후 차량 사진 촬영", "여행자보험 가입", "소매치기 대비 크로스백 준비"], "response": ["위급 상황이면 112(통합)로 신고하세요.", "렌터카 사기 등 분쟁은 반드시 현지 경찰에 신고 접수(폴리자)를 하고, 대사관에도 상황을 알리세요.", "긴급 상황은 영사콜센터로도 연결할 수 있어요."], "payment": ["대도시는 카드가 보편적이나 소도시 재래시장·소규모 상점은 현금이 필요해요."]}}, "es": {"name": "스페인", "flag": "🇪🇸", "cities": ["스페인", "마드리드", "바르셀로나", "세비야", "스페인여행", "바르셀로나여행"], "currency": "유로(EUR)", "cats": {"safety": ["[꼭 확인하세요] 대사관에서 렌터카 업체 사기 및 렌터카 이용 관광객 대상 절도 관련 주의보가 발령됐어요. 주차 중 누군가 차량을 파손시킨 뒤 '도와주는 척' 접근해 짐을 훔치는 수법이 보고되고 있어요.", "바르셀로나 람블라스 거리, 마드리드 지하철 등 관광 밀집 지역은 소매치기가 매우 흔해요.", "해변에서는 일행이 물놀이하는 동안 남은 짐을 노리는 절도가 잦으니 교대로 지키세요."], "emergency": {"police": "112 (통합)", "ambulance": "112", "fire": "112", "extra": "", "consulate": "주스페인 대한민국 대사관(마드리드). 정확한 연락처는 출국 전 0404.go.kr에서 재확인하세요."}, "insurance": ["사립병원은 선결제를 요구하는 경우가 많아 여행자보험 캐시리스 제휴 여부를 확인하세요."], "forex": ["카드 결제가 보편적이에요. DCC(원화 결제)는 거절하고 '유로(EUR)'로 결제하세요."], "customs": ["EU 역외에서 육류·유제품 반입이 제한돼요."], "transport": ["렌터카 주차 시 되도록 CCTV가 있는 유료 주차장을 이용하고, 차 안에 짐을 두지 마세요.", "지하철·트램에서는 가방을 앞으로 메세요."], "scams": ["렌터카 반납 시 흠집을 이유로 추가 비용을 청구하는 사례가 있어 대여·반납 전후 사진을 꼭 남기세요.", "낯선 사람이 차량 타이어 등을 가리키며 도움을 자처할 때는 짐 관리에 더 신경 쓰세요.", "손목시계나 팔찌를 채운 뒤 대가를 요구하는 강매, 가짜 기부 서명 요구도 흔해요."], "checklist": ["렌터카는 공식 업체로 예약, 대여·반납 전후 사진 촬영", "소매치기 대비 크로스백 착용", "여행자보험 가입", "유로 소액 환전"], "response": ["위급 상황이면 112(통합)로 신고하세요.", "도난·사기 피해는 현지 경찰서(코미사리아)에서 신고서(Denuncia)를 받아두면 보험 청구에 필요해요.", "긴급 상황은 대사관 또는 영사콜센터로 연결하세요."], "payment": ["카드 결제가 소액 결제까지 보편적으로 쓰여요."]}}, "au": {"name": "호주", "flag": "🇦🇺", "cities": ["호주", "시드니", "멜버른", "브리즈번", "골드코스트", "케언즈", "호주여행", "시드니여행"], "currency": "호주달러(AUD)", "cats": {"safety": ["전반적으로 치안이 매우 좋은 편이에요.", "해파리·상어 등 해양생물과 강한 자외선에 주의하세요. 지정된 안전 해변(깃발 사이)에서만 수영하고 선크림은 필수예요.", "아웃백 등 장거리 운전 시 '로드트레인(초대형 화물차)'과의 안전거리를 충분히 확보하세요."], "emergency": {"police": "000 (통합)", "ambulance": "000", "fire": "000", "extra": "", "consulate": "주호주 대한민국 대사관(캔버라) · 시드니·멜버른·브리즈번 총영사관. 정확한 연락처는 출국 전 0404.go.kr에서 재확인하세요."}, "insurance": ["병원비가 비싼 편이라(미국보다는 낮지만) 여행자보험은 꼭 챙기세요.", "응급실 이용 시에도 외국인은 비용이 청구될 수 있어요."], "forex": ["카드·전자결제가 매우 보편적이라 현금이 거의 필요 없어요. DCC(원화 결제)는 거절하고 '호주달러(AUD)'로 결제하세요."], "customs": ["검역이 매우 엄격해요. 생과일·채소·육류·목재제품·꿀 등은 반입이 금지되며 위반 시 고액 벌금이 부과될 수 있어요.", "입국 시 검역신고서를 정확히 작성하세요. 신고 누락이 무신고보다 더 큰 문제가 될 수 있어요."], "transport": ["대중교통이 발달해 있어 시내는 대중교통만으로도 충분해요.", "렌터카 이용 시 좌측통행이라는 점을 꼭 숙지하세요."], "scams": ["렌터카 반납 시 흠집을 이유로 추가 비용을 청구하는 사례가 드물게 있어요.", "워킹홀리데이·구직 관련 사칭 사기(현지 체류자 대상)가 있으니 낯선 채용 제안은 주의하세요."], "checklist": ["전자여행허가(ETA) 사전 신청 필수", "검역신고서 정확히 작성", "선크림·리쉬가드 등 자외선 대비용품 준비", "여행자보험 가입"], "response": ["위급 상황이면 000으로 신고하세요.", "여권 분실 등은 대사관·총영사관에 연락하거나 영사콜센터로 연결하세요."], "payment": ["카드·전자결제가 사실상 표준이에요. 현금을 아예 안 받는 상점도 많아요."]}}, "gu": {"name": "괌·사이판", "flag": "🇬🇺", "cities": ["괌", "사이판", "괌여행", "사이판여행"], "currency": "달러(USD)", "cats": {"safety": ["미국령으로 전반적으로 안전한 편이지만, 인적이 드문 야간 해변가 이동은 자제하세요.", "태풍 시즌(7~11월)엔 일정 변경 가능성을 염두에 두세요."], "emergency": {"police": "911", "ambulance": "911", "fire": "911", "extra": "", "consulate": "주괌 대한민국 명예영사관 및 주호놀룰루 총영사관이 관할해요. 정확한 연락처는 출국 전 0404.go.kr에서 재확인하세요."}, "insurance": ["미국 의료체계를 따르기 때문에 병원비가 비싼 편이에요. 여행자보험은 꼭 챙기세요.", "진료 전 여행자보험 가입 사실을 알리고 캐시리스 제휴 여부를 확인하세요."], "forex": ["카드 결제가 보편적이에요. DCC(원화 결제)는 거절하고 '달러(USD)'로 결제하세요."], "customs": ["미국 세관 규정이 적용돼요. 농산물·육류 반입이 제한됩니다."], "transport": ["대중교통이 미비해 렌터카 이용이 사실상 필수예요.", "미국식으로 우측통행이니 렌터카 이용 시 참고하세요."], "scams": ["렌터카 반납 시 흠집을 이유로 추가 비용을 청구하는 사례가 드물게 있으니 대여·반납 전후 사진을 남기세요.", "스노클링·투어 상품 중 저가 미끼 상품은 안전장비가 부실할 수 있어요."], "checklist": ["괌은 무비자 45일 입국 프로그램 확인, 사이판은 45일 무비자 확인", "렌터카 예약 시 보험 옵션 확인", "여행자보험 가입", "달러 소액 환전"], "response": ["위급 상황이면 911로 신고하세요.", "여권 분실 등은 관할 영사관에 연락하거나 영사콜센터로 연결하세요."], "payment": ["카드 결제가 사실상 표준이며, 팁 문화(15~20%)도 미국 본토와 동일하게 적용돼요."]}}};
+
+const CATS = [
+  {key:"all",      label:"전체 보기",                    icon:"📋"},
+  {key:"safety",   label:"필수 안전 수칙",                icon:"🛡️"},
+  {key:"emergency",label:"영사콜센터 & 응급 연락처",       icon:"☎️"},
+  {key:"insurance",label:"여행자보험 & 병원 이용법",       icon:"🏥"},
+  {key:"forex",    label:"결제·환전 사기 예방법",          icon:"💳"},
+  {key:"customs",  label:"반입 금지 물품 & 수하물 규정",   icon:"🧳"},
+  {key:"transport",label:"교통 바가지 대처 & 이동 팁",     icon:"🚕"},
+  {key:"scams",    label:"주요 사기 & 바가지 패턴",        icon:"⚠️"},
+  {key:"checklist",label:"출국 전 안심 체크리스트",        icon:"✅"},
+  {key:"response", label:"긴급 상황 대처법",               icon:"🚨"},
+  {key:"payment",  label:"환전 & 결제 안심 팁",            icon:"💱"}
+];
+
+const catSelect = document.getElementById('catSelect');
+CATS.forEach(c=>{
+  const opt = document.createElement('option');
+  opt.value = c.key;
+  opt.textContent = c.icon + ' ' + c.label;
+  catSelect.appendChild(opt);
+});
+
+// build search index: city/alias -> country code
+const INDEX = [];
+Object.keys(DATA).forEach(code=>{
+  const d = DATA[code];
+  d.cities.forEach(city=>{
+    INDEX.push({label:city, code:code});
+  });
+});
+
+const searchInput = document.getElementById('searchInput');
+const suggestBox = document.getElementById('suggest');
+const resultBox = document.getElementById('result');
+const quickRow = document.getElementById('quickRow');
+
+// quick chips: 15 country names
+const QUICK = Object.keys(DATA).map(code=>({code, label:DATA[code].name, flag:DATA[code].flag}));
+QUICK.forEach(q=>{
+  const btn = document.createElement('button');
+  btn.textContent = q.flag + ' ' + q.label;
+  btn.addEventListener('click', ()=>{
+    searchInput.value = q.label;
+    selectCountry(q.code);
+    suggestBox.classList.remove('show');
+  });
+  quickRow.appendChild(btn);
+});
+
+let currentCode = null;
+let activeSuggestIndex = -1;
+
+searchInput.addEventListener('input', ()=>{
+  const q = searchInput.value.trim();
+  activeSuggestIndex = -1;
+  if(!q){ suggestBox.classList.remove('show'); suggestBox.innerHTML=''; return; }
+  const matches = INDEX.filter(item=> item.label.includes(q) );
+  // dedupe by code, prefer exact-ish match order, cap at 8
+  const seen = new Set();
+  const uniq = [];
+  matches.forEach(m=>{
+    const k = m.code+'|'+m.label;
+    if(!seen.has(k)){ seen.add(k); uniq.push(m); }
+  });
+  renderSuggest(uniq.slice(0,8));
+});
+
+searchInput.addEventListener('keydown', (e)=>{
+  const items = suggestBox.querySelectorAll('button');
+  if(e.key === 'ArrowDown'){
+    e.preventDefault();
+    if(items.length===0) return;
+    activeSuggestIndex = (activeSuggestIndex+1) % items.length;
+    updateActive(items);
+  } else if(e.key === 'ArrowUp'){
+    e.preventDefault();
+    if(items.length===0) return;
+    activeSuggestIndex = (activeSuggestIndex-1+items.length) % items.length;
+    updateActive(items);
+  } else if(e.key === 'Enter'){
+    if(activeSuggestIndex>=0 && items[activeSuggestIndex]){
+      items[activeSuggestIndex].click();
+    } else if(items.length>0){
+      items[0].click();
+    }
+  } else if(e.key === 'Escape'){
+    suggestBox.classList.remove('show');
+  }
+});
+
+function updateActive(items){
+  items.forEach((it,i)=> it.classList.toggle('active', i===activeSuggestIndex));
+  if(activeSuggestIndex>=0) items[activeSuggestIndex].scrollIntoView({block:'nearest'});
+}
+
+function renderSuggest(list){
+  if(list.length===0){ suggestBox.classList.remove('show'); suggestBox.innerHTML=''; return; }
+  suggestBox.innerHTML = list.map(item=>{
+    const d = DATA[item.code];
+    return '<button type="button" data-code="'+item.code+'" data-label="'+item.label+'">'
+      + '<span class="flag">'+d.flag+'</span>'
+      + '<span>'+item.label+'</span>'
+      + '<span class="country">'+d.name+'</span>'
+      + '</button>';
+  }).join('');
+  suggestBox.classList.add('show');
+  suggestBox.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      searchInput.value = btn.getAttribute('data-label');
+      selectCountry(btn.getAttribute('data-code'));
+      suggestBox.classList.remove('show');
+    });
+  });
+}
+
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('.search-box')){ suggestBox.classList.remove('show'); }
+});
+
+catSelect.addEventListener('change', ()=>{
+  if(currentCode) renderResult(currentCode);
+});
+
+function selectCountry(code){
+  currentCode = code;
+  renderResult(code);
+}
+
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function listHtml(arr){
+  if(!arr || arr.length===0) return '<p style="color:var(--sub);font-size:14.5px;">등록된 정보가 준비 중이에요.</p>';
+  return '<ul>' + arr.map(t=>{
+    const isWarn = t.indexOf('[꼭 확인하세요]') === 0;
+    const text = isWarn ? t.replace('[꼭 확인하세요] ', '⚠️ ') : t;
+    return '<li'+(isWarn?' class="warn"':'')+'>'+esc(text)+'</li>';
+  }).join('') + '</ul>';
+}
+
+function emergencyHtml(em){
+  let grid = '<div class="em-grid">';
+  grid += '<div class="em-item"><div class="lbl">경찰</div><div class="num">'+esc(em.police)+'</div></div>';
+  grid += '<div class="em-item"><div class="lbl">구급</div><div class="num">'+esc(em.ambulance)+'</div></div>';
+  grid += '<div class="em-item"><div class="lbl">화재</div><div class="num">'+esc(em.fire)+'</div></div>';
+  grid += '</div>';
+  if(em.extra){
+    grid += '<div class="consulate-box" style="margin-bottom:12px;"><b>추가 연락처</b><br>'+esc(em.extra)+'</div>';
+  }
+  grid += '<div class="cc-box"><b>🇰🇷 외교부 영사콜센터(전 세계 공통, 24시간)</b><br>'
+    + '해외에서 국제전화로 <b>+82-2-3210-0404</b> · 카카오톡 채널 "외교부 영사콜센터" · 무료전화 앱 "영사콜센터 무료전화"로도 상담 가능해요.</div>';
+  grid += '<div class="consulate-box"><b>재외공관</b><br>'+esc(em.consulate)+'</div>';
+  return grid;
+}
+
+function catCardHtml(catKey, catLabel, catIcon, num, country){
+  let body = '';
+  if(catKey === 'emergency'){
+    body = emergencyHtml(country.cats.emergency);
+  } else {
+    body = listHtml(country.cats[catKey]);
+  }
+  return '<div class="cat-card">'
+    + '<h3><span class="num">'+num+'</span>'+catIcon+' '+esc(catLabel)+'</h3>'
+    + body
+    + '</div>';
+}
+
+function renderResult(code){
+  const country = DATA[code];
+  if(!country){ return; }
+  const selectedCat = catSelect.value;
+  let html = '<div class="country-head"><span class="flag">'+country.flag+'</span><div><h2>'+esc(country.name)+'</h2><div class="cur">통화: '+esc(country.currency)+'</div></div></div>';
+
+  const catsToShow = selectedCat === 'all' ? CATS.slice(1) : CATS.filter(c=>c.key===selectedCat);
+  catsToShow.forEach((c,i)=>{
+    html += catCardHtml(c.key, c.label, c.icon, i+1, country);
+  });
+
+  resultBox.innerHTML = html;
+}
+</script>
+</body>
+</html>
