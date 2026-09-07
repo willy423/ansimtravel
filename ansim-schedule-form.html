@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>안심여행정보 여행 신청서</title>
+<meta name="description" content="손님이 여행 조건을 입력하면 자동으로 접수되는 안심여행정보 여행 신청서">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Literata:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+
+  :root{
+    --paper:#F7F3EA;
+    --paper-alt:#EEE6D3;
+    --paper-deep:#E2D8BE;
+    --ink:#1E2A28;
+    --ink-soft:#425350;
+    --ink-faint:#657672;
+    --line:#C9BFA0;
+    --teal:#0B5D52;
+    --teal-deep:#08423B;
+    --amber:#C9A227;
+    --amber-deep:#9C7D1C;
+    --brick:#8B3A3A;
+    --shadow:#1E2A28;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--paper-deep);
+    color: var(--ink);
+    font-family:'Literata', Georgia, 'Noto Serif KR', serif;
+    -webkit-font-smoothing:antialiased;
+    padding: clamp(16px, 4vw, 48px) clamp(12px, 3vw, 24px);
+    min-height:100vh;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+  }
+  a{ color:var(--teal-deep); }
+  body{ -webkit-user-select:none; -moz-user-select:none; user-select:none; }
+  input, textarea, select{ -webkit-user-select:text; -moz-user-select:text; user-select:text; }
+
+  .letterhead{
+    max-width:760px; margin:0 auto 18px; text-align:center;
+  }
+  .brand__mark{
+    width:40px; height:40px; border-radius:50%; margin:0 auto 10px;
+    border:2px solid var(--ink); display:flex; align-items:center; justify-content:center;
+    font-size:18px; background:var(--amber); color:var(--ink);
+  }
+  .brand__name{
+    font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:30px;
+    letter-spacing:.02em; text-transform:uppercase;
+  }
+  .brand__tag{
+    font-family:'IBM Plex Mono', monospace; font-size:14px; color:var(--ink-soft);
+    letter-spacing:.04em; margin-top:4px;
+  }
+  .brand__caution{
+    font-family:'IBM Plex Mono', monospace; font-size:13px; font-weight:600; color:var(--brick);
+    letter-spacing:.02em; margin-top:8px;
+  }
+
+  .ticket{
+    max-width:760px; margin:0 auto; background:var(--paper);
+    border:2px solid var(--ink); box-shadow:6px 6px 0 var(--shadow);
+    position:relative;
+  }
+  .progress{
+    display:flex; background:var(--paper-alt); border-bottom:2px dashed var(--line);
+  }
+  .progress__step{
+    flex:1; text-align:center; padding:16px 8px;
+    font-family:'IBM Plex Mono', monospace; font-size:13px; font-weight:600; color:var(--ink-soft);
+    border-right:1px dashed var(--line); position:relative;
+  }
+  .progress__step:last-child{ border-right:none; }
+  .progress__step .num{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:22px; height:22px; border-radius:50%; border:2px solid var(--line);
+    font-family:'Big Shoulders Display', sans-serif; font-weight:700; font-size:12px;
+    margin-right:6px; background:var(--paper); color:var(--ink-faint);
+  }
+  .progress__step[data-state="active"]{ color:var(--ink); font-weight:600; }
+  .progress__step[data-state="active"] .num{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+  .progress__step[data-state="done"] .num{ border-color:var(--teal); background:var(--teal); color:var(--paper); }
+
+  .main{ padding:30px clamp(18px,4vw,40px) 32px; }
+
+  .step-kicker{
+    font-family:'IBM Plex Mono', monospace; font-size:13px; font-weight:600; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--amber-deep); margin:0 0 4px;
+  }
+  .step-title{
+    font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:clamp(28px,4vw,34px);
+    margin:0 0 6px; text-wrap:balance;
+  }
+  .step-desc{
+    font-family:'Literata', serif; font-size:16px; color:var(--ink-soft); margin:0 0 20px; line-height:1.6;
+  }
+
+  .field-group{ border-top:1px solid var(--line); padding:16px 0; }
+  .field-group:first-of-type{ border-top:none; padding-top:0; }
+  .field-group__label{
+    font-family:'IBM Plex Mono', monospace; font-size:13.5px; font-weight:600; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--ink); margin:0 0 10px;
+  }
+  .field-group__hint{
+    font-family:'Literata', serif; font-size:14px; color:var(--ink-soft);
+    margin:6px 0 0; font-style:italic;
+  }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    font-family:'IBM Plex Mono', monospace; font-size:14.5px; padding:9px 14px;
+    border:1.5px solid var(--line); background:transparent; color:var(--ink);
+    cursor:pointer; border-radius:3px; transition:background .12s, color .12s, border-color .12s;
+  }
+  .chip:hover{ border-color:var(--ink-soft); }
+  .chip.is-selected{ background:var(--teal); border-color:var(--teal); color:var(--paper); }
+  .chip.is-square{ width:40px; height:40px; padding:0; text-align:center; border-radius:50%;
+    font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:15px; }
+
+  .style-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .style-card{ flex:1 1 140px; border:1.5px solid var(--line); padding:12px 14px; cursor:pointer; background:transparent; }
+  .style-card.is-selected{ border-color:var(--ink); background:var(--paper-alt); box-shadow:3px 3px 0 var(--ink); }
+  .style-card__title{ font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:18px; margin:0 0 2px; }
+  .style-card__sub{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--ink-soft); margin:0; }
+
+  .children-row{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .child-pill{
+    display:flex; align-items:center; gap:6px; border:1.5px solid var(--line);
+    padding:5px 6px 5px 10px; border-radius:3px; font-family:'IBM Plex Mono',monospace; font-size:12.5px;
+  }
+  .child-pill input{
+    width:42px; border:none; border-bottom:1px solid var(--line); background:transparent;
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-align:center;
+  }
+  .child-pill button{ border:none; background:none; color:var(--brick); cursor:pointer; font-size:14px; padding:2px; }
+  .add-child-btn{
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; border:1.5px dashed var(--line);
+    background:transparent; color:var(--ink-soft); padding:7px 12px; cursor:pointer; border-radius:3px;
+  }
+  .add-child-btn:hover{ border-color:var(--amber-deep); color:var(--amber-deep); }
+
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .three-col{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+  @media (max-width:560px){ .two-col, .three-col{ grid-template-columns:1fr; } }
+
+  label.field-label{
+    display:block; font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:var(--ink-soft);
+    text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px;
+  }
+  input[type="text"], input[type="email"], input[type="tel"], input[type="date"],
+  input[type="month"], select, textarea{
+    width:100%; font-family:'IBM Plex Mono', monospace; font-size:16px; padding:11px 12px;
+    border:1.5px solid var(--line); background:var(--paper); color:var(--ink); border-radius:2px;
+  }
+  textarea{ font-family:'Literata', serif; font-size:16px; min-height:90px; resize:vertical; line-height:1.6; }
+  input:focus, select:focus, textarea:focus, .chip:focus-visible, .style-card:focus-visible,
+  button:focus-visible, .toggle-btn:focus-visible{ outline:2px solid var(--teal); outline-offset:1px; }
+
+  .toggle-row{ display:flex; gap:10px; }
+  .toggle-btn{
+    flex:1; border:1.5px solid var(--line); background:transparent; color:var(--ink);
+    font-family:'IBM Plex Mono', monospace; font-size:15px; padding:13px; cursor:pointer; border-radius:2px;
+  }
+  .toggle-btn.is-selected{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+
+  .consent{
+    display:flex; gap:10px; align-items:flex-start; background:var(--paper-alt);
+    border:1px solid var(--line); padding:14px 16px; font-size:13.5px; color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace; line-height:1.7;
+  }
+  .consent input{ width:auto; margin-top:3px; flex:none; }
+
+  .issue-btn{
+    font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:18px;
+    text-transform:uppercase; letter-spacing:.03em; background:var(--amber); color:var(--ink);
+    border:2px solid var(--ink); padding:15px 28px; cursor:pointer; box-shadow:3px 3px 0 var(--ink);
+    border-radius:2px;
+  }
+  .issue-btn:hover{ transform:translate(1px,1px); box-shadow:2px 2px 0 var(--ink); }
+  .issue-btn:active{ transform:translate(3px,3px); box-shadow:0 0 0 var(--ink); }
+  .issue-btn[disabled]{ opacity:.45; cursor:not-allowed; box-shadow:none; transform:none; }
+
+  .nav-row{ display:flex; justify-content:space-between; align-items:center; margin-top:26px; gap:10px; flex-wrap:wrap; }
+  .nav-btn{
+    font-family:'IBM Plex Mono',monospace; font-size:14.5px; letter-spacing:.02em; background:none;
+    border:1.5px solid var(--ink); color:var(--ink); padding:11px 18px; cursor:pointer; border-radius:2px;
+  }
+  .nav-btn:hover{ background:var(--ink); color:var(--paper); }
+  .nav-btn[disabled]{ opacity:.35; cursor:not-allowed; }
+  .nav-btn:hover[disabled]{ background:none; color:var(--ink); }
+
+  .error-msg{ color:var(--brick); font-family:'IBM Plex Mono',monospace; font-size:13.5px; margin-top:10px; font-weight:600; }
+
+  .done-screen{ text-align:center; padding:20px 10px; }
+  .done-screen .mark{ font-size:44px; margin-bottom:10px; }
+  .done-screen h2{ font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:30px; margin:0 0 10px; }
+  .done-screen p{ font-family:'Literata', serif; font-size:16px; color:var(--ink-soft); max-width:460px; margin:0 auto; line-height:1.75; }
+
+  .footnote{
+    max-width:760px; margin:16px auto 0; font-family:'IBM Plex Mono', monospace;
+    font-size:13px; color:var(--ink-soft); line-height:1.7; text-align:center;
+  }
+  .footnote__credit{
+    margin:0 0 6px; font-family:'Big Shoulders Display', sans-serif; font-weight:700;
+    font-size:13px; letter-spacing:.02em; color:var(--ink);
+  }
+  .footnote__notice{ margin:0; color:var(--ink-soft); font-weight:600; }
+  .footnote__notice--legal{ margin-top:6px; color:var(--ink-faint); font-weight:500; }
+</style>
+</head>
+<body>
+<div class="letterhead">
+  <div class="brand__mark">✈</div>
+  <div class="brand__name">안심여행정보 여행 신청서</div>
+  <div class="brand__tag">1~2분만 입력하시면, 맞춤 여행 가이드를 이메일로 보내드려요</div>
+  <div class="brand__caution">⚠ 신청은 1인 1회만 가능합니다. 내용을 신중히 확인한 후 제출해 주세요.</div>
+</div>
+
+<div class="ticket">
+  <div class="progress" id="progressBar"></div>
+  <div class="main" id="mainPanel"></div>
+</div>
+
+<div class="footnote">
+  <p class="footnote__credit">Made by 안심여행정보</p>
+  <p class="footnote__notice">입력하신 모든 정보는 맞춤 여행 가이드 제작·발송 목적 외에는 어떠한 용도로도 사용되지 않으며, 어떠한 경우에도 제3자에게 제공·판매되지 않습니다. 목적 달성 후 관련 법령에 따라 즉시 파기됩니다.</p>
+  <p class="footnote__notice footnote__notice--legal">※ 본 웹페이지 및 그 안에 담긴 모든 콘텐츠·구성·디자인에 대한 저작권과 지식재산권은 안심여행정보(우영미)에게 있습니다. 사전 서면 동의 없이 타인에게 링크를 무단으로 전달·공유하거나, 복제·재배포·상업적으로 이용하는 행위를 엄격히 금지합니다.</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // 우클릭(마우스 오른쪽 버튼) 및 드래그 복사 방지
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  document.addEventListener('dragstart', function(e){ e.preventDefault(); });
+
+  // ★★★ 배포한 Apps Script 웹 앱 URL을 아래 따옴표 안에 붙여넣으세요 ★★★
+  var ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbza6loRE7-cxA1NSXWZL7PuxW-JO2Z3ATPI_MBjqkwYGJinaEZpInkWtWAixFkX4asycA/exec';
+
+  var STEP_LABELS = ['여행자 정보', '여행 조건', '연락처 · 신청'];
+
+  var KIDS_TAGS   = ['호텔 수영장','테마파크','워터파크','동물원/아쿠아리움','키즈카페','해변 놀이','자연 체험','박물관/과학관'];
+  var ADULT_TAGS  = ['맛집 투어','쇼핑','마사지/스파','카페 투어','야경 감상','현지 시장','문화재/유적지','와이너리/브루어리'];
+  var AVOID_TAGS  = ['긴 비행시간(5시간+)','위생 불안 지역','치안 불안','너무 더운 날씨','너무 추운 날씨','대중교통 불편','언어 장벽 심함'];
+  var STAMINA_TAGS= ['하루 1만보 이내','오후 휴식 시간 필요','느긋한 일정 선호','이동 최소화','대중교통보다 택시/차량','짐 많이 안 들고 다니기'];
+  var MEAL_TAGS   = ['웨이팅 짧은 곳','예약 가능한 곳','현지 맛집 위주','가성비 좋은 곳','매운 음식 제외','아이 메뉴 있는 곳','채식 옵션 필요','알레르기 고려 필요'];
+  var DURATIONS   = ['당일치기','1박2일','2박3일','3박4일','4박5일','5박6일','6박7일','7박 이상','미정'];
+  var FLIGHT_BUDGETS = ['20만원 이하','20~30만원','30~50만원','50~80만원','80~120만원','120만원 이상','미정'];
+  var HOTEL_BUDGETS  = ['15만원 이하','15~20만원','20~30만원','30~50만원','50만원 이상','미정'];
+
+  function defaultState(){
+    return {
+      adults:2, children:[],
+      style:null,
+      kidsMust:[], adultMust:[], avoid:[], stamina:[], meal:[],
+      destinationDecided:true, destination:'', excludedRegion:'',
+      season:'', duration:'', depart:'', ret:'',
+      flightBudget:'', hotelBudget:'',
+      name:'', contact:'', note:'', consent:false
+    };
+  }
+
+  var state = defaultState();
+  var currentStep = 0;
+  var submitting = false;
+  var submitError = '';
+  var done = false;
+
+  function totalPeople(){ return Number(state.adults||0) + state.children.length; }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
+  function joinTags(arr){ return arr.length ? arr.join(', ') : null; }
+
+  function familyLine(){
+    var c = state.children.length;
+    if(c===0) return '구성원: 성인 ' + state.adults + '명 (총 ' + totalPeople() + '인)';
+    var ages = state.children.map(function(ch){ return (ch.age!==''&&ch.age!=null) ? ch.age+'세' : '나이 미정'; }).join(', ');
+    return '구성원: 성인 ' + state.adults + '명 + 자녀 ' + c + '명 (' + ages + ') · 총 ' + totalPeople() + '인';
+  }
+  function childrenText(){
+    if(!state.children.length) return '';
+    return state.children.map(function(ch){ return (ch.age||'나이 미정') + '세'; }).join(', ') + ' 자녀 ' + state.children.length + '명';
+  }
+
+  function contextBlock(lines){
+    var filtered = lines.filter(function(l){ return l !== null && l !== undefined && l !== ''; });
+    return 'C(Context):\n' + filtered.map(function(l){ return '- ' + l; }).join('\n');
+  }
+
+  function buildDestinationPrompt(){
+    var hasKids = state.children.length>0;
+    var role = "R(Role): 너는 전 세계 여행지를 꿰뚫고 있는 '" + (hasKids?'가족 여행':'자유여행') + " 전문 큐레이터'야.";
+    var instr = "I(Instruction): " + (hasKids?'우리 가족':'우리 일행') + " 모두가 만족할 수 있는 [여행지 3곳]을 추천하고, 각 여행지의 장단점을 비교해 줘.";
+    var ctx = contextBlock([
+      familyLine(),
+      state.style ? '여행 스타일: ' + state.style : null,
+      state.excludedRegion ? '제외할 여행지: ' + state.excludedRegion : null,
+      joinTags(state.kidsMust) ? '아이들 필수 활동: ' + joinTags(state.kidsMust) : null,
+      joinTags(state.adultMust) ? '어른 필수 활동: ' + joinTags(state.adultMust) : null,
+      joinTags(state.avoid) ? '기피 사항: ' + joinTags(state.avoid) : null,
+      state.flightBudget ? '항공권 예산: 1인 ' + state.flightBudget + ' × ' + totalPeople() + '인' : null,
+      (state.season || state.duration) ? '시기/기간: ' + (state.season||'미정') + ' / ' + (state.duration||'미정') : null
+    ]);
+    var exp = "E(Expectation):\n" +
+      "1. 추천 도시 / 추천 이유 (" + (hasKids?'아이들 포인트 & 어른 포인트':'동행자별 만족 포인트') + ")\n" +
+      "2. 예상 항공권 가격대 및 비행시간\n" +
+      "3. [결정 장애 해결] 여행 성향별(휴양형/관광형/반반형) 추천 점수표\n" +
+      "4. 각 여행지별 베스트 시즌 및 피해야 할 시기";
+    return [role, instr, ctx, exp].join('\n\n');
+  }
+
+  function buildFlightPrompt(){
+    var role = "R(Role): 너는 실시간 항공권 데이터를 분석하는 '항공권 최저가 전략가'야.";
+    var period = (state.depart||'출발일 미정') + ' ~ ' + (state.ret||'귀국일 미정');
+    var instr = "I(Instruction): " + period + " 일정으로 " + (state.destination||'[여행지]') + "에 가는 항공권 중, 우리 일행에게 가장 합리적인 [Best 옵션 2가지]를 비교 분석해 줘.";
+    var ctx = contextBlock([
+      familyLine(),
+      state.flightBudget ? '예산: 1인 ' + state.flightBudget + ' × ' + totalPeople() + '인' : null,
+      '조건:',
+      '  1) 가격 방어: 총액 기준 가장 저렴한 것',
+      '  2) 스케줄: 비행시간과 출도착 시간 밸런스 확인',
+      '  3) 경유 여부 및 수하물 정책 비교'
+    ]);
+    var exp = "E(Expectation):\n" +
+      "1. 항공사별 총액/1인 가격 비교표\n" +
+      "2. 스케줄 비교 (총 소요시간, 경유 여부, 출도착 시각)\n" +
+      "3. 예약 타이밍 및 가격 변동 팁\n" +
+      "4. 수하물·좌석 정책 체크포인트";
+    return [role, instr, ctx, exp].join('\n\n');
+  }
+
+  function buildItineraryPrompt(){
+    var role = "R(Role): 너는 동선 최적화에 특화된 '일정 설계 전문가'야.";
+    var instr = "I(Instruction): " + (state.destination||'[여행지]') + " 여행에서 " + (state.duration||'전체') + " 일정을 우리 조건에 맞춰 하루 단위로 짜줘.";
+    var ctx = contextBlock([
+      familyLine(),
+      state.style ? '여행 스타일: ' + state.style : null,
+      (state.depart||state.ret) ? '일정: ' + (state.depart||'?') + ' ~ ' + (state.ret||'?') : null,
+      joinTags(state.kidsMust) ? '아이들 필수 활동: ' + joinTags(state.kidsMust) : null,
+      joinTags(state.adultMust) ? '어른 필수 활동: ' + joinTags(state.adultMust) : null,
+      joinTags(state.avoid) ? '기피 사항: ' + joinTags(state.avoid) : null,
+      joinTags(state.stamina) ? '체력 안배: ' + joinTags(state.stamina) : null,
+      joinTags(state.meal) ? '식사 조건: ' + joinTags(state.meal) : null
+    ]);
+    var exp = "E(Expectation):\n" +
+      "1. Day별 시간대별 일정표 (오전/오후/저녁)\n" +
+      "2. 이동수단 및 구간별 소요시간\n" +
+      "3. 각 일정 예상 비용대\n" +
+      "4. 우천이나 컨디션 난조 시 대체 플랜";
+    return [role, instr, ctx, exp].join('\n\n');
+  }
+
+  function buildHotelPrompt(){
+    var role = "R(Role): 너는 호텔 약관과 룸 구성을 정밀 분석하는 '숙소 큐레이터'야.";
+    var instr = "I(Instruction): " + (state.destination||'[여행지]') + " 여행에서 아래 숙박 일정에 맞춰, 총 " + totalPeople() + "인 투숙이 가능한 호텔 5곳을 추천하고 [비교 분석 표]로 작성해 줘. 각 호텔의 부킹닷컴 검색 결과로 바로 연결되는 링크도 함께 제공해 줘.";
+    var ctx = contextBlock([
+      familyLine(),
+      (state.depart||state.ret) ? '숙박 일정: ' + (state.depart||'?') + ' ~ ' + (state.ret||'?') + ' : ' + (state.destination||'[여행지]') : null,
+      '필수 조건:',
+      '  1) ' + totalPeople() + '인 투숙 가능',
+      '  2) 조식 포함 여부 표시',
+      '  3) 주요 관광지 접근성',
+      state.hotelBudget ? '예산: 1박당 ' + state.hotelBudget + ' 이내' : null
+    ]);
+    var exp = "E(Expectation):\n" +
+      "1. 호텔별 장단점 비교표 (가격/평점/조식/위치)\n" +
+      "2. 부킹닷컴 검색 링크\n" +
+      "3. " + totalPeople() + "인 이상 투숙 시 객실 타입 주의사항";
+    return [role, instr, ctx, exp].join('\n\n');
+  }
+
+  function buildSafetyPrompt(){
+    var role = "R(Role): 너는 안전 불감증이 전혀 없는 '여행 안전 보안관'이자 현지 코디네이터야.";
+    var instr = "I(Instruction): " + (state.destination||'[여행지]') + " 여행을 위한 다음 항목들을 작성해 줘.\n" +
+      "1. 필수 준비물 체크리스트\n" +
+      "2. 현지 위기 대처 매뉴얼 (긴급 연락처, 병원, 사기 유형 등)\n" +
+      "3. 현지 생존 회화 카드 (식당, 교통, 긴급 상황에서 쓸 현지어 표현)";
+    var ctx = contextBlock([
+      '여행지: ' + (state.destination||'[여행지]'),
+      familyLine(),
+      (state.depart||state.ret) ? '여행 기간: ' + (state.depart||'?') + ' ~ ' + (state.ret||'?') : null,
+      state.style ? '여행 스타일: ' + state.style : null,
+      joinTags(state.kidsMust) ? '아이들 활동: ' + joinTags(state.kidsMust) : null,
+      joinTags(state.adultMust) ? '어른 활동: ' + joinTags(state.adultMust) : null
+    ]);
+    var exp = "E(Expectation):\n" +
+      "1. [Must Bring] 필수 준비물 체크리스트 (의류/위생, 상비약, 전자기기 & 현지 전압, 필수 설치 앱)\n" +
+      "2. [Safety] 대사관/영사관 연락처, 응급 의료기관, 주의해야 할 사기·범죄 유형, 여권 분실 대처법\n" +
+      "3. [Survival Language] 생존 회화 카드 (식당 주문, 길찾기·교통, 긴급 상황 요청 문구 + 발음 표기)";
+    return [role, instr, ctx, exp].join('\n\n');
+  }
+
+  function buildFullPrompt(){
+    var formatNote = '[출력 형식 지침] 아래 모든 답변은 표(table)와 번호를 매긴 리스트(1. 2. 3. ...)를 적극 활용해서 한눈에 보기 쉽게 정리해줘. 긴 줄글 설명은 최소화하고, 비교하거나 나열할 수 있는 내용은 반드시 표나 번호 리스트로 작성해줘.\n\n' +
+      '[정보 정확성 지침] 지금 이 시점 기준으로 실제 확인 가능한 최신 정보만 제공해줘. 확실하지 않거나 오래된 정보, 추측성 내용은 절대 지어내지 말고, 확실하지 않은 부분은 "확인 필요"라고 명확히 표시해줘. 특히 요금, 영업시간, 운영 여부, 연락처처럼 자주 바뀌는 정보는 최신 웹 검색 결과를 기준으로 답해줘.\n\n' +
+      '[가격 표기 지침] 비용을 표시할 때는 항목 성격에 따라 기준을 다르게 해줘. 스파·마사지·입장료·식사비처럼 사람마다 이용 여부가 갈릴 수 있는 항목은 반드시 "1인당" 가격으로 표기해줘. 반면 택시·전세차량처럼 인원수와 상관없이 그룹 단위로 한 번에 지불하는 비용은 "총액(그룹 기준)"으로 표기해줘. 표에 가격을 쓸 때 각 항목이 1인당인지 총액인지 괄호로 명확히 구분해서 표시해줘 (예: "1인당 MOP 200" 또는 "총액 MOP 150").\n\n';
+    if(!state.destinationDecided || !state.destination){
+      return formatNote + '===== [여행지 추천] =====\n' + buildDestinationPrompt();
+    }
+    var parts = [];
+    parts.push('===== [일정 수립] =====\n' + buildItineraryPrompt());
+    parts.push('===== [현지 안전가이드] =====\n' + buildSafetyPrompt());
+    return formatNote + parts.join('\n\n\n');
+  }
+
+  // ---------- Rendering ----------
+  function renderProgress(){
+    var html = '';
+    STEP_LABELS.forEach(function(label, i){
+      var st = done ? 'done' : (i === currentStep ? 'active' : (i < currentStep ? 'done' : 'todo'));
+      html += '<div class="progress__step" data-state="'+st+'"><span class="num">'+(st==='done'?'✓':(i+1))+'</span>'+esc(label)+'</div>';
+    });
+    document.getElementById('progressBar').innerHTML = html;
+  }
+
+  function chipRow(groupKey, tags, selectedArr){
+    return '<div class="chip-row">' + tags.map(function(t){
+      var sel = selectedArr.indexOf(t) > -1;
+      return '<button type="button" class="chip'+(sel?' is-selected':'')+'" data-group="'+groupKey+'" data-value="'+esc(t)+'">'+esc(t)+'</button>';
+    }).join('') + '</div>';
+  }
+
+  function optionList(values, current){
+    return '<option value="">선택</option>' + values.map(function(v){
+      return '<option value="'+esc(v)+'"'+(v===current?' selected':'')+'>'+esc(v)+'</option>';
+    }).join('');
+  }
+
+  function renderStep0(){
+    var html = '<p class="step-kicker">STEP 1 · 3</p><h2 class="step-title">여행자 정보</h2>';
+    html += '<p class="step-desc">누구와 함께, 어떤 스타일로 여행하시는지 알려주세요.</p>';
+
+    html += '<div class="field-group"><p class="field-group__label">인원 구성</p>';
+    html += '<div class="chip-row">' + [1,2,3,4,5,6,7,8].map(function(n){
+      return '<button type="button" class="chip is-square'+(state.adults===n?' is-selected':'')+'" data-adults="'+n+'">'+n+'</button>';
+    }).join('') + '</div>';
+    html += '<p class="field-group__hint">부모님, 친척 등 동행하는 성인 모두 포함</p>';
+    html += '<div class="children-row" style="margin-top:10px;">';
+    state.children.forEach(function(ch){
+      html += '<span class="child-pill">자녀 <input type="number" min="0" max="19" data-child-age="'+ch.id+'" value="'+esc(ch.age)+'" placeholder="나이">세<button type="button" data-child-remove="'+ch.id+'">×</button></span>';
+    });
+    html += '<button type="button" class="add-child-btn" id="addChildBtn">+ 자녀 추가</button></div></div>';
+
+    html += '<div class="field-group"><p class="field-group__label">여행 스타일 *</p><div class="style-row">';
+    [['휴양형','호텔에서 느긋하게'],['관광형','알차게 돌아다니기'],['반반형','휴양 + 관광 밸런스']].forEach(function(pair){
+      html += '<button type="button" class="style-card'+(state.style===pair[0]?' is-selected':'')+'" data-style="'+pair[0]+'">' +
+              '<p class="style-card__title">'+pair[0]+'</p><p class="style-card__sub">'+pair[1]+'</p></button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field-group"><p class="field-group__label">아이들과 꼭 하고 싶은 것</p>' + chipRow('kidsMust', KIDS_TAGS, state.kidsMust) + '</div>';
+    html += '<div class="field-group"><p class="field-group__label">어른들이 꼭 하고 싶은 것</p>' + chipRow('adultMust', ADULT_TAGS, state.adultMust) + '</div>';
+    html += '<div class="field-group"><p class="field-group__label">피하고 싶은 것</p>' + chipRow('avoid', AVOID_TAGS, state.avoid) + '</div>';
+    html += '<div class="field-group"><p class="field-group__label">체력·이동 관련 선호</p>' + chipRow('stamina', STAMINA_TAGS, state.stamina) + '</div>';
+    html += '<div class="field-group"><p class="field-group__label">식사 관련 선호</p>' + chipRow('meal', MEAL_TAGS, state.meal) + '</div>';
+
+    html += navRow(false, true, !state.style);
+    return html;
+  }
+
+  function renderStep1(){
+    var html = '<p class="step-kicker">STEP 2 · 3</p><h2 class="step-title">여행 조건</h2>';
+    html += '<p class="step-desc">여행지와 날짜, 예산을 알려주세요. 아직 정하지 못하셨어도 괜찮아요.</p>';
+
+    html += '<div class="field-group"><p class="field-group__label">여행지가 정해졌나요?</p><div class="toggle-row">' +
+      '<button type="button" class="toggle-btn'+(state.destinationDecided?' is-selected':'')+'" data-decided="1">네, 정했어요</button>' +
+      '<button type="button" class="toggle-btn'+(!state.destinationDecided?' is-selected':'')+'" data-decided="0">아니요, 추천받고 싶어요</button>' +
+      '</div></div>';
+
+    if(state.destinationDecided){
+      html += '<div class="field-group"><label class="field-label" for="destinationInput">희망 여행지</label>' +
+        '<input type="text" id="destinationInput" value="'+esc(state.destination)+'" placeholder="예: 마카오, 오사카, 다낭 등"></div>';
+    } else {
+      html += '<div class="field-group"><label class="field-label" for="excludedRegionInput">제외하고 싶은 여행지</label>' +
+        '<input type="text" id="excludedRegionInput" value="'+esc(state.excludedRegion)+'" placeholder="예: 중국 (이미 다녀온 곳 등)"></div>';
+    }
+
+    html += '<div class="field-group"><div class="three-col">' +
+      '<div><label class="field-label" for="seasonInput">여행 시기</label><input type="month" id="seasonInput" value="'+esc(state.season)+'"></div>' +
+      '<div><label class="field-label" for="durationInput">여행 기간</label><select id="durationInput">'+optionList(DURATIONS, state.duration)+'</select></div>' +
+      '<div></div>' +
+      '</div></div>';
+
+    if(state.destinationDecided){
+      html += '<div class="field-group two-col">' +
+        '<div><label class="field-label" for="departInput">출발일 (정해졌다면)</label><input type="date" id="departInput" value="'+esc(state.depart)+'"></div>' +
+        '<div><label class="field-label" for="retInput">귀국일 (정해졌다면)</label><input type="date" id="retInput" value="'+esc(state.ret)+'"></div>' +
+        '</div>';
+    }
+
+    html += '<div class="field-group two-col">' +
+      '<div><label class="field-label" for="flightBudgetInput">항공 예산 (1인)</label><select id="flightBudgetInput">'+optionList(FLIGHT_BUDGETS, state.flightBudget)+'</select></div>' +
+      '<div><label class="field-label" for="hotelBudgetInput">숙박 예산 (1박)</label><select id="hotelBudgetInput">'+optionList(HOTEL_BUDGETS, state.hotelBudget)+'</select></div>' +
+      '</div>';
+
+    html += navRow(true, true, false);
+    return html;
+  }
+
+  function renderStep2(){
+    var html = '<p class="step-kicker">STEP 3 · 3</p><h2 class="step-title">연락처 · 신청</h2>';
+    html += '<p class="step-desc">완성된 맞춤 여행 가이드를 보내드릴 곳을 알려주세요.</p>';
+
+    html += '<div class="field-group two-col">' +
+      '<div><label class="field-label" for="nameInput">이름 (닉네임 가능)</label><input type="text" id="nameInput" value="'+esc(state.name)+'" placeholder="예: 김안심"></div>' +
+      '<div><label class="field-label" for="contactInput">이메일 또는 연락처 *</label><input type="text" id="contactInput" value="'+esc(state.contact)+'" placeholder="example@email.com"></div>' +
+      '</div>';
+
+    html += '<div class="field-group"><label class="field-label" for="noteInput">추가로 알려주고 싶은 것</label>' +
+      '<textarea id="noteInput" placeholder="예: 부모님 무릎이 안 좋아서 계단이 적은 코스로 부탁드려요">'+esc(state.note)+'</textarea></div>';
+
+    html += '<div class="field-group"><label class="consent">' +
+      '<input type="checkbox" id="consentInput"'+(state.consent?' checked':'')+'>' +
+      '<span>[필수] 입력하신 이름·연락처·여행 조건은 맞춤 여행 가이드 제작과 발송 목적으로만 사용되며, 가이드 발송 후 별도 요청이 없으면 1년 이내 파기됩니다. 제3자에게 제공하지 않습니다.</span>' +
+      '</label></div>';
+
+    if(submitError){
+      html += '<p class="error-msg">'+esc(submitError)+'</p>';
+    }
+
+    var canSubmit = state.contact && state.consent && !submitting;
+    html += '<div class="nav-row">' +
+      '<button type="button" class="nav-btn" id="prevBtn">← 이전</button>' +
+      '<button type="button" class="issue-btn" id="submitBtn"'+(canSubmit?'':' disabled')+'>' + (submitting ? '전송 중...' : '📮 신청하기') + '</button>' +
+      '</div>';
+    return html;
+  }
+
+  function renderDone(){
+    return '<div class="done-screen">' +
+      '<div class="mark">🎉</div>' +
+      '<h2>신청이 완료되었어요</h2>' +
+      '<p>입력해주신 조건으로 맞춤 여행 가이드를 준비해서, 1~2일 안에 남겨주신 연락처로 보내드릴게요. 안심여행정보를 이용해주셔서 감사합니다.</p>' +
+      '</div>';
+  }
+
+  function navRow(showPrev, showNext, nextDisabled){
+    var html = '<div class="nav-row">';
+    html += showPrev ? '<button type="button" class="nav-btn" id="prevBtn">← 이전</button>' : '<span></span>';
+    html += showNext ? '<button type="button" class="nav-btn" id="nextBtn"'+(nextDisabled?' disabled':'')+'>다음 →</button>' : '<span></span>';
+    html += '</div>';
+    return html;
+  }
+
+  var RENDERERS = [renderStep0, renderStep1, renderStep2];
+
+  function renderMain(){
+    renderProgress();
+    var html = done ? renderDone() : RENDERERS[currentStep]();
+    document.getElementById('mainPanel').innerHTML = html;
+    if(!done) bindMainEvents();
+  }
+
+  function bindMainEvents(){
+    var panel = document.getElementById('mainPanel');
+
+    panel.querySelectorAll('[data-adults]').forEach(function(btn){
+      btn.addEventListener('click', function(){ state.adults = Number(btn.getAttribute('data-adults')); renderMain(); });
+    });
+
+    var addChildBtn = document.getElementById('addChildBtn');
+    if(addChildBtn){
+      addChildBtn.addEventListener('click', function(){
+        state.children.push({ id:'c'+Date.now()+Math.random().toString(16).slice(2), age:'' });
+        renderMain();
+      });
+    }
+    panel.querySelectorAll('[data-child-remove]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.getAttribute('data-child-remove');
+        state.children = state.children.filter(function(c){ return c.id !== id; });
+        renderMain();
+      });
+    });
+    panel.querySelectorAll('[data-child-age]').forEach(function(inp){
+      inp.addEventListener('input', function(){
+        var id = inp.getAttribute('data-child-age');
+        var ch = state.children.find(function(c){ return c.id === id; });
+        if(ch) ch.age = inp.value;
+      });
+    });
+
+    panel.querySelectorAll('[data-style]').forEach(function(btn){
+      btn.addEventListener('click', function(){ state.style = btn.getAttribute('data-style'); renderMain(); });
+    });
+
+    panel.querySelectorAll('.chip[data-group]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var group = btn.getAttribute('data-group');
+        var value = btn.getAttribute('data-value');
+        var arr = state[group];
+        var idx = arr.indexOf(value);
+        if(idx>-1) arr.splice(idx,1); else arr.push(value);
+        renderMain();
+      });
+    });
+
+    panel.querySelectorAll('[data-decided]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        state.destinationDecided = btn.getAttribute('data-decided') === '1';
+        renderMain();
+      });
+    });
+
+    bindIfExists('destinationInput','input', function(el){ state.destination = el.value; });
+    bindIfExists('excludedRegionInput','input', function(el){ state.excludedRegion = el.value; });
+    bindIfExists('seasonInput','input', function(el){ state.season = el.value; });
+    bindIfExists('durationInput','change', function(el){ state.duration = el.value; });
+    bindIfExists('departInput','change', function(el){ state.depart = el.value; });
+    bindIfExists('retInput','change', function(el){ state.ret = el.value; });
+    bindIfExists('flightBudgetInput','change', function(el){ state.flightBudget = el.value; });
+    bindIfExists('hotelBudgetInput','change', function(el){ state.hotelBudget = el.value; });
+    bindIfExists('nameInput','input', function(el){ state.name = el.value; });
+    bindIfExists('contactInput','input', function(el){ state.contact = el.value; renderNav(); });
+    bindIfExists('noteInput','input', function(el){ state.note = el.value; });
+    bindIfExists('consentInput','change', function(el){ state.consent = el.checked; renderNav(); });
+
+    bindIfExists('prevBtn','click', function(){ currentStep = Math.max(0, currentStep-1); renderMain(); });
+    bindIfExists('nextBtn','click', function(){ currentStep = Math.min(2, currentStep+1); renderMain(); });
+    bindIfExists('submitBtn','click', function(){ submitApplication(); });
+  }
+
+  function renderNav(){
+    // re-render only the submit button enabled state on step 2 without losing focus on text inputs
+    if(currentStep !== 2) return;
+    var btn = document.getElementById('submitBtn');
+    if(btn) btn.disabled = !(state.contact && state.consent && !submitting);
+  }
+
+  function bindIfExists(id, evt, fn){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener(evt, function(){ fn(el); });
+  }
+
+  function submitApplication(){
+    if(!state.contact || !state.consent || submitting) return;
+    submitting = true;
+    submitError = '';
+    renderMain();
+
+    var payload = {
+      name: state.name,
+      contact: state.contact,
+      adults: state.adults,
+      childrenText: childrenText(),
+      style: state.style,
+      destinationDecided: state.destinationDecided,
+      destination: state.destination,
+      excludedRegion: state.excludedRegion,
+      season: state.season,
+      duration: state.duration,
+      depart: state.depart,
+      ret: state.ret,
+      flightBudget: state.flightBudget,
+      hotelBudget: state.hotelBudget,
+      kidsMust: state.kidsMust,
+      adultMust: state.adultMust,
+      avoid: state.avoid,
+      stamina: state.stamina,
+      meal: state.meal,
+      note: state.note,
+      fullPrompt: buildFullPrompt()
+    };
+
+    if(!ENDPOINT_URL || ENDPOINT_URL.indexOf('PASTE_YOUR') === 0){
+      submitting = false;
+      submitError = '아직 접수 서버 주소가 연결되지 않았어요. 관리자에게 문의해주세요.';
+      renderMain();
+      return;
+    }
+
+    fetch(ENDPOINT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Apps Script와의 CORS 프리플라이트 회피용
+      body: JSON.stringify(payload)
+    }).then(function(res){ return res.json(); })
+      .then(function(json){
+        submitting = false;
+        if(json && json.result === 'success'){
+          done = true;
+          renderMain();
+        } else {
+          submitError = '전송 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.';
+          renderMain();
+        }
+      }).catch(function(){
+        submitting = false;
+        submitError = '전송 중 문제가 발생했어요. 인터넷 연결을 확인하고 다시 시도해주세요.';
+        renderMain();
+      });
+  }
+
+  renderMain();
+})();
+</script>
+</body>
+</html>
