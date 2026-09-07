@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>안심여행정보 가족 여행 플래너</title>
+<meta name="description" content="여행 조건을 입력하면 여행지·항공권·일정·호텔·현지 안전가이드용 RICE 프롬프트를 단계별로 만들어 AI에 붙여넣을 수 있는 안심여행정보 가족 여행 플래너">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Literata:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#F0EDE3;
+    --paper-alt:#E7E1CE;
+    --paper-deep:#E0D9C4;
+    --ink:#16302B;
+    --ink-soft:#455A54;
+    --ink-faint:#7C8C86;
+    --line:#C7BFA4;
+    --teal:#0E6B66;
+    --teal-deep:#0A4F4B;
+    --amber:#DB9A34;
+    --amber-deep:#B5721D;
+    --brick:#B5432F;
+    --shadow:#16302B;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--paper-deep);
+    color: var(--ink);
+    font-family:'Literata', Georgia, 'Noto Serif KR', serif;
+    -webkit-font-smoothing:antialiased;
+    padding: clamp(16px, 4vw, 48px) clamp(12px, 3vw, 24px);
+    min-height:100vh;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+  }
+
+  a{ color:var(--teal-deep); }
+
+  .letterhead{
+    max-width:960px;
+    margin: 0 auto 18px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+  }
+  .brand__mark{
+    width:34px; height:34px; border-radius:50%;
+    border:2px solid var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px; letter-spacing:0;
+    background:var(--amber); color:var(--ink); flex:none;
+  }
+  .brand__name{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:800; font-size:22px; letter-spacing:.02em;
+    text-transform:uppercase;
+  }
+  .brand__tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px; color:var(--ink-soft);
+    letter-spacing:.06em; text-transform:uppercase;
+  }
+  .reset-link{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; letter-spacing:.03em;
+    color:var(--ink-soft);
+    background:none; border:1px solid var(--line);
+    padding:6px 10px; cursor:pointer;
+  }
+  .reset-link:hover{ border-color:var(--brick); color:var(--brick); }
+
+  .ticket{
+    max-width:960px;
+    margin:0 auto;
+    background:var(--paper);
+    border:2px solid var(--ink);
+    box-shadow:6px 6px 0 var(--shadow);
+    display:grid;
+    grid-template-columns:196px 26px 1fr;
+    position:relative;
+  }
+
+  .stub{
+    padding:26px 16px;
+    background:var(--paper-alt);
+    display:flex; flex-direction:column; gap:0;
+  }
+  .stub__eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-faint); margin-bottom:16px;
+  }
+  .step-list{ list-style:none; margin:0; padding:0; position:relative; }
+  .step-item{
+    display:flex; align-items:flex-start; gap:10px;
+    position:relative; padding-bottom:26px;
+    cursor:pointer;
+  }
+  .step-item:last-child{ padding-bottom:0; }
+  .step-item::before{
+    content:'';
+    position:absolute; left:15px; top:32px; bottom:0;
+    width:0; border-left:2px dashed var(--line);
+  }
+  .step-item:last-child::before{ display:none; }
+  .step-dot{
+    flex:none; width:32px; height:32px; border-radius:50%;
+    border:2px solid var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Big Shoulders Display', sans-serif; font-weight:700; font-size:14px;
+    background:var(--paper); color:var(--ink);
+  }
+  .step-item[data-state="done"] .step-dot{ background:var(--teal); border-color:var(--teal); color:var(--paper); }
+  .step-item[data-state="active"] .step-dot{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+  .step-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; line-height:1.3; padding-top:6px;
+    color:var(--ink-soft);
+  }
+  .step-item[data-state="active"] .step-label{ color:var(--ink); font-weight:600; }
+
+  .perforation{ position:relative; background:transparent; }
+  .perforation::before{
+    content:''; position:absolute; top:0; bottom:0; left:50%;
+    border-left:2px dashed var(--line); transform:translateX(-50%);
+  }
+  .perforation .notch{
+    position:absolute; left:50%; transform:translateX(-50%);
+    width:22px; height:22px; border-radius:50%;
+    background:var(--paper-deep);
+  }
+  .perforation .notch.top{ top:-13px; }
+  .perforation .notch.bottom{ bottom:-13px; }
+
+  .main{ padding:28px clamp(18px,3vw,36px) 30px; min-width:0; }
+
+  .step-kicker{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px;
+    letter-spacing:.1em; text-transform:uppercase; color:var(--amber-deep);
+    margin:0 0 4px;
+  }
+  .step-title{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:800; font-size:clamp(24px,3vw,30px);
+    margin:0 0 18px; letter-spacing:.01em; text-wrap:balance;
+  }
+
+  .field-group{
+    border-top:1px solid var(--line);
+    padding:16px 0;
+  }
+  .field-group:first-of-type{ border-top:none; padding-top:0; }
+  .field-group__label{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft);
+    margin:0 0 10px; display:flex; align-items:center; gap:6px;
+  }
+  .field-group__hint{
+    font-family:'Literata', serif; font-size:12.5px; color:var(--ink-faint);
+    margin:6px 0 0; font-style:italic;
+  }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px;
+    padding:7px 12px; border:1.5px solid var(--line); background:transparent;
+    color:var(--ink-soft); cursor:pointer; border-radius:3px;
+    transition:background .12s, color .12s, border-color .12s;
+  }
+  .chip:hover{ border-color:var(--ink-soft); }
+  .chip.is-selected{ background:var(--teal); border-color:var(--teal); color:var(--paper); }
+  .chip.is-square{ width:40px; height:40px; padding:0; text-align:center; border-radius:50%; font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:15px; }
+
+  .style-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .style-card{
+    flex:1 1 140px; border:1.5px solid var(--line); padding:12px 14px;
+    cursor:pointer; background:transparent;
+  }
+  .style-card.is-selected{ border-color:var(--ink); background:var(--paper-alt); box-shadow:3px 3px 0 var(--ink); }
+  .style-card__title{ font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:16px; margin:0 0 2px; }
+  .style-card__sub{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-faint); margin:0; }
+
+  .children-row{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .child-pill{
+    display:flex; align-items:center; gap:6px;
+    border:1.5px solid var(--line); padding:5px 6px 5px 10px; border-radius:3px;
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px;
+  }
+  .child-pill input{
+    width:42px; border:none; border-bottom:1px solid var(--line); background:transparent;
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-align:center;
+  }
+  .child-pill button{
+    border:none; background:none; color:var(--brick); cursor:pointer; font-size:14px; line-height:1;
+    padding:2px;
+  }
+  .add-child-btn{
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px;
+    border:1.5px dashed var(--line); background:transparent; color:var(--ink-soft);
+    padding:7px 12px; cursor:pointer; border-radius:3px;
+  }
+  .add-child-btn:hover{ border-color:var(--amber-deep); color:var(--amber-deep); }
+
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .three-col{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+  @media (max-width:560px){ .two-col, .three-col{ grid-template-columns:1fr; } }
+
+  label.field-label{
+    display:block; font-family:'IBM Plex Mono',monospace; font-size:11px;
+    color:var(--ink-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px;
+  }
+  input[type="text"], input[type="date"], input[type="month"], select, textarea{
+    width:100%; font-family:'IBM Plex Mono', monospace; font-size:13.5px;
+    padding:9px 10px; border:1.5px solid var(--line); background:var(--paper);
+    color:var(--ink); border-radius:2px;
+  }
+  input:focus, select:focus, textarea:focus, .chip:focus-visible, .style-card:focus-visible, button:focus-visible{
+    outline:2px solid var(--teal); outline-offset:1px;
+  }
+
+  .manifest{
+    background:var(--paper-alt); border:1.5px solid var(--ink);
+    padding:14px 16px; margin-bottom:20px;
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px 18px;
+  }
+  .manifest__item dt{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--amber-deep); margin:0 0 3px;
+  }
+  .manifest__item dd{
+    margin:0; font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:16px; line-height:1.25;
+    color:var(--ink);
+  }
+  .manifest__item{ min-width:0; }
+  .manifest__item dd{ overflow-wrap:anywhere; }
+
+  .issue-btn{
+    font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:15px;
+    text-transform:uppercase; letter-spacing:.04em;
+    background:var(--amber); color:var(--ink); border:2px solid var(--ink);
+    padding:12px 22px; cursor:pointer; box-shadow:3px 3px 0 var(--ink);
+    border-radius:2px;
+  }
+  .issue-btn:hover{ transform:translate(1px,1px); box-shadow:2px 2px 0 var(--ink); }
+  .issue-btn:active{ transform:translate(3px,3px); box-shadow:0 0 0 var(--ink); }
+  .issue-btn[disabled]{ opacity:.45; cursor:not-allowed; box-shadow:none; transform:none; }
+
+  .receipt{
+    margin-top:20px; background:#FBF9F2; border:1.5px solid var(--ink);
+    position:relative; padding:18px 16px 16px;
+  }
+  .receipt::before{
+    content:''; position:absolute; top:-9px; left:14px; right:14px; height:0;
+    border-top:2px dashed var(--line);
+  }
+  .receipt__head{
+    display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; gap:10px; flex-wrap:wrap;
+  }
+  .receipt__title{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--teal-deep); display:flex; align-items:center; gap:6px;
+  }
+  .copy-btn{
+    font-family:'IBM Plex Mono',monospace; font-size:12px;
+    background:transparent; border:1.5px solid var(--ink); color:var(--ink);
+    padding:6px 12px; cursor:pointer; border-radius:2px;
+  }
+  .copy-btn:hover{ background:var(--ink); color:var(--paper); }
+  .copy-btn.copied{ background:var(--teal); border-color:var(--teal); color:var(--paper); }
+  .receipt pre{
+    margin:0; white-space:pre-wrap; word-break:keep-all; overflow-wrap:anywhere;
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; line-height:1.65; color:var(--ink);
+    max-height:360px; overflow-y:auto;
+  }
+
+  .nav-row{ display:flex; justify-content:space-between; align-items:center; margin-top:26px; gap:10px; flex-wrap:wrap; }
+  .nav-btn{
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; letter-spacing:.03em;
+    background:none; border:1.5px solid var(--ink); color:var(--ink);
+    padding:9px 16px; cursor:pointer; border-radius:2px;
+  }
+  .nav-btn:hover{ background:var(--ink); color:var(--paper); }
+  .nav-btn[disabled]{ opacity:.35; cursor:not-allowed; }
+  .nav-btn:hover[disabled]{ background:none; color:var(--ink); }
+
+  .final-banner{
+    margin-top:20px; border:2px solid var(--teal); background:rgba(14,107,102,.08);
+    padding:16px 18px; text-align:center;
+  }
+  .final-banner strong{ font-family:'Big Shoulders Display',sans-serif; font-size:19px; display:block; margin-bottom:4px; }
+
+  .barcode{
+    height:26px; margin-top:26px;
+    background:repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 5px, var(--ink) 5px 6px, transparent 6px 11px, var(--ink) 11px 14px, transparent 14px 17px);
+    opacity:.55;
+  }
+  .ticket-no{
+    text-align:right; font-family:'IBM Plex Mono',monospace; font-size:10.5px;
+    color:var(--ink-faint); margin-top:6px; letter-spacing:.06em;
+  }
+
+  .footnote{
+    max-width:960px; margin:16px auto 0; font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px; color:var(--ink-soft); line-height:1.6; text-align:center;
+  }
+  .footnote__usage{ margin:0 0 14px; }
+  .footnote__credit{
+    margin:0 0 6px; font-family:'Big Shoulders Display', sans-serif;
+    font-weight:700; font-size:13px; letter-spacing:.02em; color:var(--ink);
+  }
+  .footnote__notice{ margin:0; color:var(--ink-faint); }
+
+  @media (max-width:720px){
+    .ticket{ grid-template-columns:1fr; }
+    .stub{ order:1; }
+    .stub{ flex-direction:row; overflow-x:auto; gap:0; padding:16px; }
+    .step-list{ display:flex; gap:0; }
+    .step-item{ flex-direction:column; align-items:center; padding:0 18px 0 0; min-width:78px; }
+    .step-item::before{ left:32px; top:15px; right:-18px; bottom:auto; border-left:none; border-top:2px dashed var(--line); width:auto; height:0; }
+    .step-label{ text-align:center; font-size:10.5px; padding-top:8px; }
+    .stub__eyebrow{ display:none; }
+    .perforation{ order:2; height:20px; }
+    .perforation::before{ top:50%; left:0; right:0; border-left:none; border-top:2px dashed var(--line); transform:translateY(-50%); }
+    .perforation .notch{ top:50%; transform:translate(-50%,-50%); left:0; }
+    .perforation .notch.top{ left:8px; top:50%; }
+    .perforation .notch.bottom{ left:auto; right:8px; bottom:auto; top:50%; }
+    .main{ order:3; }
+  }
+</style>
+</head>
+<body>
+
+<div class="letterhead">
+  <div class="brand">
+    <div class="brand__mark">✈</div>
+    <div>
+      <div class="brand__name">안심여행정보 가족 여행 플래너</div>
+      <div class="brand__tag">RICE 프롬프트 자동 발권 · 여행지 무관</div>
+    </div>
+  </div>
+  <button class="reset-link" id="resetBtn" type="button">전체 초기화</button>
+</div>
+
+<div class="ticket">
+  <div class="stub">
+    <div class="stub__eyebrow">경로 (6단계)</div>
+    <ul class="step-list" id="stepList"></ul>
+  </div>
+  <div class="perforation"><span class="notch top"></span><span class="notch bottom"></span></div>
+  <div class="main" id="mainPanel"></div>
+</div>
+
+<div class="footnote">
+  <p class="footnote__usage">여기서 만든 프롬프트는 ChatGPT · Claude · Gemini 등 원하는 AI에 그대로 붙여넣어 사용하세요. AI 응답은 참고용이며, 항공권·호텔 가격과 영업 정보는 예약 전 반드시 원본 사이트에서 재확인하세요.</p>
+  <p class="footnote__credit">Made with 💙 by 안심여행정보 · RICE Framework</p>
+  <p class="footnote__notice">※ [주의사항] 본 웹앱에 대한 모든 지식재산권은 안심여행정보(우영미)에게 있습니다. 타인에게 무단으로 링크를 재공유하거나 상업적으로 배포하는 행위는 엄격히 금지합니다.</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = 'trip-prompt-issuer-v1';
+
+  var STEP_META = [
+    { id:'traveler',   label:'여행자 정보' },
+    { id:'destination',label:'여행지 추천' },
+    { id:'flight',     label:'항공권 검색' },
+    { id:'itinerary',  label:'일정 수립' },
+    { id:'hotel',      label:'호텔 선정' },
+    { id:'safety',     label:'현지 안전가이드' }
+  ];
+
+  var KIDS_TAGS   = ['호텔 수영장','테마파크','워터파크','동물원/아쿠아리움','키즈카페','해변 놀이','자연 체험','박물관/과학관'];
+  var ADULT_TAGS  = ['맛집 투어','쇼핑','마사지/스파','카페 투어','야경 감상','현지 시장','문화재/유적지','와이너리/브루어리'];
+  var AVOID_TAGS  = ['긴 비행시간(5시간+)','위생 불안 지역','치안 불안','너무 더운 날씨','너무 추운 날씨','대중교통 불편','언어 장벽 심함'];
+  var STAMINA_TAGS= ['하루 1만보 이내','오후 휴식 시간 필요','느긋한 일정 선호','이동 최소화','대중교통보다 택시/차량','짐 많이 안 들고 다니기'];
+  var MEAL_TAGS   = ['웨이팅 짧은 곳','예약 가능한 곳','현지 맛집 위주','가성비 좋은 곳','매운 음식 제외','아이 메뉴 있는 곳','채식 옵션 필요','알레르기 고려 필요'];
+  var DURATIONS   = ['당일치기','1박2일','2박3일','3박4일','4박5일','5박6일','6박7일','7박 이상','미정'];
+  var FLIGHT_BUDGETS = ['20만원 이하','20~30만원','30~50만원','50~80만원','80~120만원','120만원 이상','미정'];
+  var HOTEL_BUDGETS  = ['15만원 이하','15~20만원','20~30만원','30~50만원','50만원 이상'];
+
+  function defaultState(){
+    return {
+      adults:2, children:[],
+      style:null,
+      kidsMust:[], adultMust:[], avoid:[], stamina:[], meal:[],
+      season:'', duration:'', flightBudget:'',
+      destinationMode:'recommend',
+      preferredRegion:'', excludedRegion:'',
+      destination:'',
+      depart:'', ret:'',
+      arrivalTime:'', departureTime:'',
+      hotelBudget:'',
+      generated:{ destination:false, flight:false, itinerary:false, hotel:false, safety:false },
+      prompts:{ destination:'', flight:'', itinerary:'', hotel:'', safety:'' }
+    };
+  }
+
+  var state = defaultState();
+  var currentStep = 0;
+
+  (function load(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        var parsed = JSON.parse(raw);
+        state = Object.assign(defaultState(), parsed);
+        state.generated = Object.assign(defaultState().generated, parsed.generated||{});
+        state.prompts = Object.assign(defaultState().prompts, parsed.prompts||{});
+      }
+    }catch(e){ /* ignore, fall back to defaults */ }
+  })();
+
+  function persist(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* storage unavailable, continue in memory */ }
+  }
+
+  function totalPeople(){ return Number(state.adults||0) + state.children.length; }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
+
+  function familyLine(){
+    var c = state.children.length;
+    if(c===0) return '구성원: 성인 ' + state.adults + '명 (총 ' + totalPeople() + '인)';
+    var ages = state.children.map(function(ch){ return (ch.age!==''&&ch.age!=null) ? ch.age+'세' : '나이 미정'; }).join(', ');
+    return '구성원: 성인 ' + state.adults + '명 + 자녀 ' + c + '명 (' + ages + ') · 총 ' + totalPeople() + '인';
+  }
+
+  function joinTags(arr){ return arr.length ? arr.join(', ') : null; }
+
+  function contextBlock(lines){
+    var filtered = lines.filter(function(l){ return l !== null && l !== undefined && l !== ''; });
+    return 'C(Context):\n' + filtered.map(function(l){ return '- ' + l; }).join('\n');
+  }
+
+  function hasBatchim(word){
+    if(!word) return false;
+    var last = word.trim().slice(-1);
+    var code = last.charCodeAt(0);
+    if(code < 0xAC00 || code > 0xD7A3) return false;
+    return (code - 0xAC00) % 28 !== 0;
+  }
+  function josa(word, withBatchim, withoutBatchim){
+    return hasBatchim(word) ? withBatchim : withoutBatchim;
+  }
+
+  function qualityBlock(){
+    return '[출력 지침]\n' +
+      '- 반드시 최신 정보를 기준으로 답변해 줘. 검색 기능이 있다면 반드시 활용해서 최신 정보를 확인하고, 정보의 기준 시점(예: 2026년 O월 기준)을 명시해 줘.\n' +
+      '- 요청한 항목 외의 불필요한 설명, 광고성 문구, 관련 없는 추천이나 위젯은 절대 넣지 마. 딱 요청한 내용만 답해 줘.\n' +
+      '- 표, 번호 매기기, 글머리 기호를 적극 활용해서 정리해 줘. 휴대폰 화면에서도 한눈에 보기 쉽도록 표는 간단하게, 문장은 간결하게 작성해 줘.';
+  }
+
+  // ---------- Prompt builders ----------
+  function buildDestinationPrompt(){
+    var hasKids = state.children.length>0;
+    var fixed = state.destinationMode === 'fixed' && state.preferredRegion;
+    var role, instr, exp;
+
+    if(fixed){
+      role = "R(Role): 너는 " + state.preferredRegion + " 현지 사정에 정통한 '여행 정보 전문가'야.";
+      instr = "I(Instruction): 여행지는 이미 [" + state.preferredRegion + "]" + josa(state.preferredRegion,'으로','로') + " 확정됐어. 다른 여행지를 추천하거나 비교하지 말고, 날씨나 항공권 시세 같은 일반론 말고 아래 항목만 짧게 정리해 줘.";
+      exp = "E(Expectation):\n" +
+        "1. [놓치면 아쉬운 핵심] 이 여행지에서 꼭 챙길 만한 명소·체험 3~5가지 (다음 단계인 일정 수립에 바로 참고할 수 있게)\n" +
+        "2. 우리 조건(구성원/스타일)에서 특히 신경 써야 할 점";
+    } else {
+      role = "R(Role): 너는 전 세계 여행지를 꿰뚫고 있는 '" + (hasKids?'가족 여행':'자유여행') + " 전문 큐레이터'야.";
+      var scope = state.preferredRegion ? ('[' + state.preferredRegion + '] 안에서만 ') : '';
+      instr = "I(Instruction): " + scope + (hasKids?'우리 가족':'우리 일행') + " 모두가 만족할 수 있는 여행지를 정확히 3곳까지만 추천하고, 각 여행지의 장단점을 비교해 줘." +
+        (state.preferredRegion ? (' [' + state.preferredRegion + ']' + josa(state.preferredRegion,'을','를') + ' 벗어난 지역은 추천하지 마.') : '');
+      exp = "E(Expectation):\n" +
+        "1. 추천 도시 / 추천 이유 (" + (hasKids?'아이들 포인트 & 어른 포인트':'동행자별 만족 포인트') + ")\n" +
+        "2. 예상 항공권 가격대 및 비행시간\n" +
+        "3. [결정 장애 해결] 여행 성향별(휴양형/관광형/반반형) 추천 점수표\n" +
+        "4. 각 여행지별 베스트 시즌 및 피해야 할 시기";
+    }
+
+    var ctx = contextBlock([
+      familyLine(),
+      state.style ? '여행 스타일: ' + state.style : null,
+      (!fixed && state.excludedRegion) ? '제외할 여행지: ' + state.excludedRegion : null,
+      joinTags(state.kidsMust) ? '아이들 필수 활동: ' + joinTags(state.kidsMust) : null,
+      joinTags(state.adultMust) ? '어른 필수 활동: ' + joinTags(state.adultMust) : null,
+      joinTags(state.avoid) ? '기피 사항: ' + joinTags(state.avoid) : null,
+      state.flightBudget ? '항공권 예산: 1인 ' + state.flightBudget + ' × ' + totalPeople() + '인' : null,
+      (state.season || state.duration) ? '시기/기간: ' + (state.season||'미정') + ' / ' + (state.duration||'미정') : null
+    ]);
+    return [role, instr, ctx, exp, qualityBlock()].join('\n\n');
+  }
+
+  function buildFlightPrompt(){
+    var role = "R(Role): 너는 실시간 항공권 데이터를 분석하는 '항공권 최저가 전략가'야. 검색 기능이 있다면 반드시 활용해서 실제 최신 가격을 확인해.";
+    var period = (state.depart||'출발일 미정') + ' ~ ' + (state.ret||'귀국일 미정');
+    var instr = "I(Instruction): " + period + " 일정으로 " + (state.destination||'[여행지]') + "에 가는 항공권 중 가장 저렴한 [최저가 옵션 1~2가지]를 찾아서 비교 분석해 줘. 가격이 최우선 기준이야.";
+    var ctx = contextBlock([
+      familyLine(),
+      state.flightBudget ? '예산: 1인 ' + state.flightBudget + ' × ' + totalPeople() + '인' : null,
+      '조건:',
+      '  1) 가격 방어: 총액 기준 가장 저렴한 것을 최우선으로',
+      '  2) 스케줄: 비행시간과 출도착 시간 밸런스 확인',
+      '  3) 경유 여부 및 수하물 정책 비교'
+    ]);
+    var exp = "E(Expectation):\n" +
+      "1. 항공사별 총액/1인 가격 비교표 (저렴한 순 정렬)\n" +
+      "2. 스케줄 비교 (총 소요시간, 경유 여부, 출도착 시각)\n" +
+      "3. 예약 타이밍 및 가격 변동 팁\n" +
+      "4. 수하물·좌석 정책 체크포인트";
+    return [role, instr, ctx, exp, qualityBlock()].join('\n\n');
+  }
+
+  function buildItineraryPrompt(){
+    var dest = state.destination||'[여행지]';
+    var role = "R(Role): 너는 동선 최적화에 특화된 '일정 설계 전문가'이자, 현지 맛집에 정통한 '맛집 헌터'야.";
+    var instr = "I(Instruction): " + dest + " 여행에서 " + (state.duration||'전체') + " 일정을 우리 조건에 맞춰 하루 단위로 짜주고, 네이버·구글에서 한국인 여행자들이 많이 추천하는 " + dest + " 가성비 맛집 Top 5도 검색해서 정리해 줘.";
+    var ctx = contextBlock([
+      familyLine(),
+      state.style ? '여행 스타일: ' + state.style : null,
+      (state.depart||state.ret) ? '일정: ' + (state.depart||'?') + ' ~ ' + (state.ret||'?') : null,
+      state.arrivalTime ? '현지 도착 시간: Day 1 ' + state.arrivalTime + ' 경' : null,
+      state.departureTime ? '귀국편 출발 시간: 마지막 날 ' + state.departureTime + ' 경' : null,
+      joinTags(state.kidsMust) ? '아이들 필수 활동: ' + joinTags(state.kidsMust) : null,
+      joinTags(state.adultMust) ? '어른 필수 활동: ' + joinTags(state.adultMust) : null,
+      joinTags(state.avoid) ? '기피 사항: ' + joinTags(state.avoid) : null,
+      joinTags(state.stamina) ? '체력 안배: ' + joinTags(state.stamina) : null,
+      joinTags(state.meal) ? '식사 조건: ' + joinTags(state.meal) : null,
+      '일정 설계 시 반드시 지킬 것:',
+      state.arrivalTime
+        ? '  1) Day 1은 현지 도착(' + state.arrivalTime + ' 경) 이후 입국·이동 시간을 감안해서 시작'
+        : '  1) 도착 시간이 아직 미정이니 Day 1 시작 시각을 임의로 단정하지 말고 "오전/오후 도착 가정" 정도로만 유연하게 표현',
+      state.departureTime
+        ? '  2) 마지막 날은 귀국편 출발(' + state.departureTime + ' 경)에 맞춰 공항 이동·수속 여유시간을 확보하고 끝나는 일정으로 구성'
+        : '  2) 귀국 시간이 아직 미정이니 마지막 날 일정을 임의로 단정하지 말고 여유 있게 마무리되는 정도로만 표현',
+      '  3) 숙소 위치가 아직 확정되지 않았으니 호텔↔관광지 간 구체적인 이동시간·교통비를 임의로 지어내지 말고, 지역/권역 단위로만 동선을 설명',
+      '  4) 실제 거리와 이동 수단을 고려해서 비효율적인 이동(먼 거리에 볼거리가 적은 곳)은 넣지 말고, 실제 여행자 평가가 좋은 곳 위주로 구성',
+      '  5) 맛집 Top 5는 각각 구글맵 검색 링크 포함'
+    ]);
+    var exp = "E(Expectation):\n" +
+      "1. Day별 시간대별 일정표 (오전/오후/저녁)\n" +
+      "2. 이동수단 및 구간별 소요시간 (권역 단위)\n" +
+      "3. 각 일정 예상 비용대\n" +
+      "4. 우천이나 컨디션 난조 시 대체 플랜\n" +
+      "5. [가성비 맛집 Top 5] 네이버·구글에서 한국인 추천이 많은 곳 위주로, 메뉴·가격대·한줄 추천 이유·구글맵 링크 포함 (일정 동선에서 크게 벗어나지 않는 곳 우선)";
+    return [role, instr, ctx, exp, qualityBlock()].join('\n\n');
+  }
+
+  function buildHotelPrompt(){
+    var dest = state.destination||'[여행지]';
+    var role = "R(Role): 너는 호텔 약관과 룸 구성을 정밀 분석하는 '숙소 큐레이터'야.";
+    var instr = "I(Instruction): " + dest + " 여행에서 아래 숙박 일정에 맞춰 두 그룹으로 나눠 추천해 줘.\n" +
+      "① 총 " + totalPeople() + "인 투숙이 가능한 가성비 호텔 5곳 [비교 분석 표]\n" +
+      "② " + dest + "의 대표 호텔·리조트 밀집 지역에서 한국인 여행자들이 많이 찾는 상급 호텔 Top 5 (①번 예산보다 한 단계 높은 급, 서로 다른 호텔 1곳씩)";
+    var ctx = contextBlock([
+      familyLine(),
+      (state.depart||state.ret) ? '숙박 일정: ' + (state.depart||'?') + ' ~ ' + (state.ret||'?') + ' : ' + dest : null,
+      '필수 조건:',
+      '  1) ' + totalPeople() + '인 투숙 가능',
+      '  2) 조식 포함 여부 표시',
+      '  3) 주요 관광지 접근성',
+      '  4) ①·② 모든 호텔에 부킹닷컴 검색 링크 + 구글맵 검색 링크 포함',
+      state.hotelBudget ? '① 가성비 호텔 예산: 1박당 ' + state.hotelBudget + ' 이내' : null
+    ]);
+    var exp = "E(Expectation):\n" +
+      "1. [가성비 Top 5] 장단점 비교표 (가격/평점/조식/위치) + 부킹닷컴 링크 + 구글맵 링크\n" +
+      "2. [대표 리조트 Top 5] 호텔별 특징·대표 시설 한줄 요약 + 부킹닷컴 링크 + 구글맵 링크\n" +
+      "3. " + totalPeople() + "인 이상 투숙 시 객실 타입 주의사항";
+    return [role, instr, ctx, exp, qualityBlock()].join('\n\n');
+  }
+
+  function buildSafetyPrompt(){
+    var role = "R(Role): 너는 안전 불감증이 전혀 없는 '여행 안전 보안관'이자 현지 코디네이터야.";
+    var instr = "I(Instruction): " + (state.destination||'[여행지]') + " 여행을 위한 다음 항목들을 작성해 줘.\n" +
+      "1. 필수 준비물 체크리스트\n" +
+      "2. 현지 위기 대처 매뉴얼 (긴급 연락처, 병원, 사기 유형 등)\n" +
+      "3. 현지 생존 회화 카드 (식당, 교통, 긴급 상황에서 쓸 현지어 표현)";
+    var ctx = contextBlock([
+      '여행지: ' + (state.destination||'[여행지]'),
+      familyLine(),
+      (state.depart||state.ret) ? '여행 기간: ' + (state.depart||'?') + ' ~ ' + (state.ret||'?') : null,
+      state.style ? '여행 스타일: ' + state.style : null,
+      joinTags(state.kidsMust) ? '아이들 활동: ' + joinTags(state.kidsMust) : null,
+      joinTags(state.adultMust) ? '어른 활동: ' + joinTags(state.adultMust) : null
+    ]);
+    var exp = "E(Expectation):\n" +
+      "1. [Must Bring] 필수 준비물 체크리스트 (의류/위생, 상비약, 전자기기 & 현지 전압, 필수 설치 앱)\n" +
+      "2. [Safety] 대사관/영사관 연락처, 응급 의료기관, 주의해야 할 사기·범죄 유형, 여권 분실 대처법\n" +
+      "3. [Survival Language] 생존 회화 카드 (식당 주문, 길찾기·교통, 긴급 상황 요청 문구 + 발음 표기)";
+    return [role, instr, ctx, exp, qualityBlock()].join('\n\n');
+  }
+
+  // ---------- Rendering ----------
+  function renderStepList(){
+    var ul = document.getElementById('stepList');
+    ul.innerHTML = '';
+    STEP_META.forEach(function(step, i){
+      var li = document.createElement('li');
+      li.className = 'step-item';
+      var st = i === currentStep ? 'active' : (i < currentStep ? 'done' : 'todo');
+      li.setAttribute('data-state', st);
+      li.innerHTML = '<span class="step-dot">' + (st==='done' ? '✓' : String(i+1).padStart(2,'0')) + '</span>' +
+                      '<span class="step-label">' + esc(step.label) + '</span>';
+      li.addEventListener('click', function(){ currentStep = i; renderAll(); });
+      ul.appendChild(li);
+    });
+  }
+
+  function manifestHTML(items){
+    var rows = items.filter(function(it){ return it.value; }).map(function(it){
+      return '<div class="manifest__item"><dt>'+esc(it.k)+'</dt><dd>'+esc(it.value)+'</dd></div>';
+    }).join('');
+    return '<dl class="manifest">' + rows + '</dl>';
+  }
+
+  function chipRow(groupKey, tags, selectedArr){
+    return '<div class="chip-row">' + tags.map(function(t){
+      var sel = selectedArr.indexOf(t) > -1;
+      return '<button type="button" class="chip'+(sel?' is-selected':'')+'" data-group="'+groupKey+'" data-value="'+esc(t)+'">'+esc(t)+'</button>';
+    }).join('') + '</div>';
+  }
+
+  function optionList(values, current){
+    return '<option value="">선택</option>' + values.map(function(v){
+      return '<option value="'+esc(v)+'"'+(v===current?' selected':'')+'>'+esc(v)+'</option>';
+    }).join('');
+  }
+
+  function receiptBlock(id, title, text){
+    if(!text) return '';
+    return '<div class="receipt">' +
+      '<div class="receipt__head"><span class="receipt__title">🎫 ' + esc(title) + '</span>' +
+      '<button type="button" class="copy-btn" data-copy-target="'+id+'">복사하기</button></div>' +
+      '<pre id="'+id+'">' + esc(text) + '</pre></div>';
+  }
+
+  function renderTraveler(){
+    var html = '';
+    html += '<p class="step-kicker">STEP 01 · 06</p><h2 class="step-title">여행자 정보</h2>';
+
+    html += '<div class="field-group"><p class="field-group__label">인원 구성</p>';
+    html += '<div class="chip-row" id="adultsRow">' + [1,2,3,4,5,6,7,8].map(function(n){
+      return '<button type="button" class="chip is-square'+(state.adults===n?' is-selected':'')+'" data-adults="'+n+'">'+n+'</button>';
+    }).join('') + '</div>';
+    html += '<p class="field-group__hint">부모님, 친척 등 동행하는 성인 모두 포함</p>';
+    html += '<div class="children-row" id="childrenRow" style="margin-top:10px;">';
+    state.children.forEach(function(ch){
+      html += '<span class="child-pill">자녀 <input type="number" min="0" max="19" data-child-age="'+ch.id+'" value="'+esc(ch.age)+'" placeholder="나이">세<button type="button" data-child-remove="'+ch.id+'">×</button></span>';
+    });
+    html += '<button type="button" class="add-child-btn" id="addChildBtn">+ 자녀 추가</button></div>';
+    html += '</div>';
+
+    html += '<div class="field-group"><p class="field-group__label">여행 스타일 *</p><div class="style-row">';
+    [['휴양형','호텔에서 느긋하게'],['관광형','알차게 돌아다니기'],['반반형','휴양 + 관광 밸런스']].forEach(function(pair){
+      html += '<button type="button" class="style-card'+(state.style===pair[0]?' is-selected':'')+'" data-style="'+pair[0]+'">' +
+              '<p class="style-card__title">'+pair[0]+'</p><p class="style-card__sub">'+pair[1]+'</p></button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field-group"><p class="field-group__label">아이들 필수 활동</p>' + chipRow('kidsMust', KIDS_TAGS, state.kidsMust) + '</div>';
+    html += '<div class="field-group"><p class="field-group__label">어른 필수 활동</p>' + chipRow('adultMust', ADULT_TAGS, state.adultMust) + '</div>';
+    html += '<div class="field-group"><p class="field-group__label">기피 사항</p>' + chipRow('avoid', AVOID_TAGS, state.avoid) + '</div>';
+    html += '<div class="field-group"><p class="field-group__label">체력 안배</p>' + chipRow('stamina', STAMINA_TAGS, state.stamina) + '</div>';
+    html += '<div class="field-group"><p class="field-group__label">식사 조건</p>' + chipRow('meal', MEAL_TAGS, state.meal) + '</div>';
+
+    html += '<div class="field-group"><div class="three-col">' +
+      '<div><label class="field-label" for="seasonInput">여행 시기</label><input type="month" id="seasonInput" value="'+esc(state.season)+'"></div>' +
+      '<div><label class="field-label" for="durationInput">여행 기간</label><select id="durationInput">'+optionList(DURATIONS, state.duration)+'</select></div>' +
+      '<div><label class="field-label" for="flightBudgetInput">항공 예산 (1인)</label><select id="flightBudgetInput">'+optionList(FLIGHT_BUDGETS, state.flightBudget)+'</select></div>' +
+      '</div></div>';
+
+    var destFixed = state.destinationMode === 'fixed';
+    html += '<div class="field-group"><p class="field-group__label">여행지 상태</p><div class="chip-row" id="destModeRow">' +
+      '<button type="button" class="chip'+(!destFixed?' is-selected':'')+'" data-dest-mode="recommend">여행지 추천받기</button>' +
+      '<button type="button" class="chip'+(destFixed?' is-selected':'')+'" data-dest-mode="fixed">여행지 이미 확정</button>' +
+      '</div><p class="field-group__hint">' +
+      (destFixed ? '확정된 여행지 한 곳만 입력하면, 다른 곳과 비교·추천 없이 그 여행지 정보만 정리해요.' : '지역이나 여러 후보를 입력하면 그 안에서 최대 3곳까지만 비교 추천해요.') +
+      '</p></div>';
+
+    if(destFixed){
+      html += '<div class="field-group"><label class="field-label" for="preferredRegionInput">확정된 여행지</label>' +
+        '<input type="text" id="preferredRegionInput" value="'+esc(state.preferredRegion)+'" placeholder="예: 다낭"></div>';
+    } else {
+      html += '<div class="field-group two-col">' +
+        '<div><label class="field-label" for="preferredRegionInput">선호 여행지/지역</label><input type="text" id="preferredRegionInput" value="'+esc(state.preferredRegion)+'" placeholder="예: 동남아, 유럽, 일본 오사카 등"></div>' +
+        '<div><label class="field-label" for="excludedRegionInput">제외 여행지</label><input type="text" id="excludedRegionInput" value="'+esc(state.excludedRegion)+'" placeholder="예: 중국 (이미 다녀온 곳 등)"></div>' +
+        '</div>';
+    }
+
+    html += navRow(false, true, !state.style);
+    return html;
+  }
+
+  function renderDestination(){
+    var fixed = state.destinationMode === 'fixed';
+    var html = '<p class="step-kicker">STEP 02 · 06</p><h2 class="step-title">' + (fixed ? '여행지 확정' : '여행지 추천') + '</h2>';
+    html += manifestHTML([
+      {k:'구성원', value: totalPeople()+'인 ('+ (state.children.length? '성인 '+state.adults+' + 자녀 '+state.children.length : '성인 '+state.adults) +')'},
+      {k:'스타일', value: state.style},
+      {k:'시기·기간', value: (state.season? state.season.replace('-', '년 ')+'월':'') + (state.duration? ' · '+state.duration : '') },
+      {k: fixed ? '확정 여행지' : '선호 지역', value: state.preferredRegion}
+    ]);
+    html += '<button type="button" class="issue-btn" id="genDestination">' + (fixed ? '📍 여행지 확정 프롬프트 발권' : '🌍 여행지 추천 프롬프트 발권') + '</button>';
+    html += receiptBlock('destinationReceipt', 'Step 2 프롬프트 발권 완료', state.prompts.destination);
+    if(state.generated.destination && !fixed){
+      html += '<div class="field-group" style="margin-top:18px;"><label class="field-label" for="destinationPick">AI 추천 결과 중 선택한 여행지</label>' +
+        '<input type="text" id="destinationPick" value="'+esc(state.destination)+'" placeholder="예: 오사카 (여러 도시면 쉼표로 구분)">' +
+        '<p class="field-group__hint">여러 도시를 방문한다면 함께 입력하세요 (예: 로마, 피렌체)</p></div>';
+    }
+    html += navRow(true, true, !state.destination);
+    return html;
+  }
+
+  function renderFlight(){
+    var html = '<p class="step-kicker">STEP 03 · 06</p><h2 class="step-title">항공권 검색</h2>';
+    html += manifestHTML([{k:'선택한 여행지', value: state.destination}]);
+    html += '<div class="field-group two-col">' +
+      '<div><label class="field-label" for="departInput">출발일</label><input type="date" id="departInput" value="'+esc(state.depart)+'"></div>' +
+      '<div><label class="field-label" for="retInput">귀국일</label><input type="date" id="retInput" value="'+esc(state.ret)+'"></div>' +
+      '</div>';
+    html += '<div class="field-group two-col">' +
+      '<div><label class="field-label" for="arrivalTimeInput">현지 도착 시간 (선택)</label><input type="time" id="arrivalTimeInput" value="'+esc(state.arrivalTime)+'"></div>' +
+      '<div><label class="field-label" for="departureTimeInput">귀국편 출발 시간 (선택)</label><input type="time" id="departureTimeInput" value="'+esc(state.departureTime)+'"></div>' +
+      '</div>';
+    html += '<p class="field-group__hint" style="margin:-6px 0 14px;">항공권 발권 전이라 모르면 비워둬도 돼요 — 채워두면 일정 수립 단계에서 Day1·마지막 날 일정을 여기 맞춰 짜줘요.</p>';
+    html += '<button type="button" class="issue-btn" id="genFlight">✈️ 항공권 비교 프롬프트 발권</button>';
+    html += receiptBlock('flightReceipt', 'Step 3 프롬프트 발권 완료', state.prompts.flight);
+    html += navRow(true, true, false);
+    return html;
+  }
+
+  function renderItinerary(){
+    var html = '<p class="step-kicker">STEP 04 · 06</p><h2 class="step-title">일정 수립</h2>';
+    html += manifestHTML([
+      {k:'여행지', value: state.destination},
+      {k:'일정', value: (state.depart||state.ret) ? (state.depart+' ~ '+state.ret) : null},
+      {k:'기간', value: state.duration}
+    ]);
+    html += '<button type="button" class="issue-btn" id="genItinerary">📋 일정 수립 프롬프트 발권</button>';
+    html += receiptBlock('itineraryReceipt', 'Step 4 프롬프트 발권 완료', state.prompts.itinerary);
+    html += navRow(true, true, false);
+    return html;
+  }
+
+  function renderHotel(){
+    var html = '<p class="step-kicker">STEP 05 · 06</p><h2 class="step-title">호텔 선정</h2>';
+    html += manifestHTML([
+      {k:'숙박 일정', value: (state.depart||state.ret) ? (state.depart+' ~ '+state.ret+' · '+(state.destination||'')) : state.destination}
+    ]);
+    html += '<div class="field-group"><p class="field-group__label">1박 예산</p><div class="chip-row" id="hotelBudgetRow">' +
+      HOTEL_BUDGETS.map(function(b){ return '<button type="button" class="chip'+(state.hotelBudget===b?' is-selected':'')+'" data-hotel-budget="'+esc(b)+'">'+esc(b)+'</button>'; }).join('') +
+      '</div></div>';
+    html += '<button type="button" class="issue-btn" id="genHotel">🏨 호텔 추천 프롬프트 발권 (총 '+totalPeople()+'인)</button>';
+    html += receiptBlock('hotelReceipt', 'Step 5 프롬프트 발권 완료', state.prompts.hotel);
+    html += navRow(true, true, false);
+    return html;
+  }
+
+  function renderSafety(){
+    var html = '<p class="step-kicker">STEP 06 · 06</p><h2 class="step-title">현지 안전가이드</h2>';
+    html += manifestHTML([
+      {k:'여행지', value: state.destination},
+      {k:'일정', value: (state.depart||state.ret) ? (state.depart+' ~ '+state.ret) : null},
+      {k:'구성원', value: totalPeople()+'인'},
+      {k:'숙박 예산', value: state.hotelBudget ? '1박 '+state.hotelBudget : null}
+    ]);
+    html += '<button type="button" class="issue-btn" id="genSafety">🛂 현지 안전가이드 프롬프트 발권</button>';
+    html += receiptBlock('safetyReceipt', 'Step 6 프롬프트 발권 완료', state.prompts.safety);
+    if(state.generated.safety){
+      html += '<div class="final-banner"><strong>🎉 전체 여정 프롬프트 발권 완료</strong>각 단계의 "복사하기"로 프롬프트를 가져가 AI에 붙여넣으세요. 즐거운 여행 되세요.</div>';
+    }
+    html += navRow(true, false, false);
+    html += '<div class="barcode"></div><div class="ticket-no">NO. TPI-'+ticketNumber()+'</div>';
+    return html;
+  }
+
+  function ticketNumber(){
+    var s = (state.destination||'GEN') + (state.depart||'') + totalPeople();
+    var h = 0;
+    for(var i=0;i<s.length;i++){ h = (h*31 + s.charCodeAt(i)) >>> 0; }
+    return String(h % 100000).padStart(5,'0');
+  }
+
+  function navRow(showPrev, showNext, nextDisabled){
+    var html = '<div class="nav-row">';
+    html += showPrev ? '<button type="button" class="nav-btn" id="prevBtn">← 이전</button>' : '<span></span>';
+    html += showNext ? '<button type="button" class="nav-btn" id="nextBtn"'+(nextDisabled?' disabled':'')+'>다음 →</button>' : '<span></span>';
+    html += '</div>';
+    return html;
+  }
+
+  var RENDERERS = [renderTraveler, renderDestination, renderFlight, renderItinerary, renderHotel, renderSafety];
+
+  function renderMain(){
+    document.getElementById('mainPanel').innerHTML = RENDERERS[currentStep]();
+    bindMainEvents();
+  }
+
+  function renderAll(){
+    renderStepList();
+    renderMain();
+  }
+
+  // ---------- Event binding ----------
+  function bindMainEvents(){
+    var panel = document.getElementById('mainPanel');
+
+    panel.querySelectorAll('[data-adults]').forEach(function(btn){
+      btn.addEventListener('click', function(){ state.adults = Number(btn.getAttribute('data-adults')); persist(); renderAll(); });
+    });
+
+    var addChildBtn = document.getElementById('addChildBtn');
+    if(addChildBtn){
+      addChildBtn.addEventListener('click', function(){
+        state.children.push({ id: 'c'+Date.now()+Math.random().toString(16).slice(2), age:'' });
+        persist(); renderAll();
+      });
+    }
+    panel.querySelectorAll('[data-child-remove]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.getAttribute('data-child-remove');
+        state.children = state.children.filter(function(c){ return c.id !== id; });
+        persist(); renderAll();
+      });
+    });
+    panel.querySelectorAll('[data-child-age]').forEach(function(inp){
+      inp.addEventListener('input', function(){
+        var id = inp.getAttribute('data-child-age');
+        var ch = state.children.find(function(c){ return c.id === id; });
+        if(ch){ ch.age = inp.value; persist(); }
+      });
+    });
+
+    panel.querySelectorAll('[data-style]').forEach(function(btn){
+      btn.addEventListener('click', function(){ state.style = btn.getAttribute('data-style'); persist(); renderAll(); });
+    });
+
+    panel.querySelectorAll('[data-dest-mode]').forEach(function(btn){
+      btn.addEventListener('click', function(){ state.destinationMode = btn.getAttribute('data-dest-mode'); persist(); renderAll(); });
+    });
+
+    panel.querySelectorAll('.chip[data-group]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var group = btn.getAttribute('data-group');
+        var value = btn.getAttribute('data-value');
+        var arr = state[group];
+        var idx = arr.indexOf(value);
+        if(idx>-1) arr.splice(idx,1); else arr.push(value);
+        persist(); renderMain();
+      });
+    });
+
+    panel.querySelectorAll('[data-hotel-budget]').forEach(function(btn){
+      btn.addEventListener('click', function(){ state.hotelBudget = btn.getAttribute('data-hotel-budget'); persist(); renderMain(); });
+    });
+
+    bindIfExists('seasonInput','input', function(el){ state.season = el.value; persist(); });
+    bindIfExists('durationInput','change', function(el){ state.duration = el.value; persist(); });
+    bindIfExists('flightBudgetInput','change', function(el){ state.flightBudget = el.value; persist(); });
+    bindIfExists('preferredRegionInput','input', function(el){ state.preferredRegion = el.value; persist(); });
+    bindIfExists('excludedRegionInput','input', function(el){ state.excludedRegion = el.value; persist(); });
+    bindIfExists('destinationPick','input', function(el){
+      state.destination = el.value; persist();
+      var nextBtn = document.getElementById('nextBtn');
+      if(nextBtn) nextBtn.disabled = !state.destination;
+    });
+    bindIfExists('departInput','change', function(el){ state.depart = el.value; persist(); });
+    bindIfExists('retInput','change', function(el){ state.ret = el.value; persist(); });
+    bindIfExists('arrivalTimeInput','change', function(el){ state.arrivalTime = el.value; persist(); });
+    bindIfExists('departureTimeInput','change', function(el){ state.departureTime = el.value; persist(); });
+
+    bindIfExists('genDestination','click', function(){
+      state.prompts.destination = buildDestinationPrompt();
+      state.generated.destination = true;
+      if(state.destinationMode === 'fixed' && state.preferredRegion){ state.destination = state.preferredRegion; }
+      persist(); renderMain();
+    });
+    bindIfExists('genFlight','click', function(){ state.prompts.flight = buildFlightPrompt(); state.generated.flight = true; persist(); renderMain(); });
+    bindIfExists('genItinerary','click', function(){ state.prompts.itinerary = buildItineraryPrompt(); state.generated.itinerary = true; persist(); renderMain(); });
+    bindIfExists('genHotel','click', function(){ state.prompts.hotel = buildHotelPrompt(); state.generated.hotel = true; persist(); renderMain(); });
+    bindIfExists('genSafety','click', function(){ state.prompts.safety = buildSafetyPrompt(); state.generated.safety = true; persist(); renderMain(); });
+
+    panel.querySelectorAll('[data-copy-target]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var target = document.getElementById(btn.getAttribute('data-copy-target'));
+        var text = target ? target.textContent : '';
+        copyText(text, btn);
+      });
+    });
+
+    bindIfExists('prevBtn','click', function(){ currentStep = Math.max(0, currentStep-1); renderAll(); });
+    bindIfExists('nextBtn','click', function(){ currentStep = Math.min(STEP_META.length-1, currentStep+1); renderAll(); });
+  }
+
+  function bindIfExists(id, evt, fn){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener(evt, function(){ fn(el); });
+  }
+
+  function copyText(text, btn){
+    function done(ok){
+      var original = btn.textContent;
+      btn.textContent = ok ? '복사됨!' : '복사 실패';
+      btn.classList.toggle('copied', ok);
+      setTimeout(function(){ btn.textContent = original; btn.classList.remove('copied'); }, 1500);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ fallbackCopy(text, done); });
+    } else {
+      fallbackCopy(text, done);
+    }
+  }
+  function fallbackCopy(text, done){
+    try{
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      done(ok);
+    }catch(e){ done(false); }
+  }
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    if(window.confirm('입력한 여행 조건을 모두 초기화할까요?')){
+      state = defaultState();
+      currentStep = 0;
+      persist();
+      renderAll();
+    }
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
